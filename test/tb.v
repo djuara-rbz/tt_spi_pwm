@@ -22,8 +22,20 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 
+  // Wire for cocotb testing
+  wire sclk;
+  wire mosi;
+  wire miso;
+  wire cs;
+
+  assign miso = uo_out[0];
+  assign ui_in[0] = sclk;
+  assign ui_in[1] = mosi;
+  assign ui_in[2] = cs;
+  assign ui_in[7:3] = 5'b0;
+
   // Replace tt_um_example with your module name:
-  tt_um_example user_project (
+  tt_um_spi_test_djuara user_project (
 
       // Include power ports for the Gate Level test:
 `ifdef GL_TEST
