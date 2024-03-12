@@ -30,95 +30,131 @@ module tt_um_spi_test_djuara (
   assign mosi 			= ui_in[1];  // uo_in[1] is the spi mosi
   assign cs 			= ui_in[2];  // uo_in[2] is the spi cs
 
-  reg[7:0] spi_data;
   reg[1:0] spi_state;
-  localparam Idle = 2'b00;
-  localparam Read = 2'b01;
-
-  reg[7:0] data_out;
+  localparam Idle 		= 2'b00;
+  localparam Get_data 	= 2'b01;
+  localparam Read 		= 2'b10;
+  localparam Write 		= 2'b11;
+  reg[7:0] spi_data_reg;
+  reg[7:0] addr_reg;
   reg[3:0] index;
+  // CDC registers
+  reg[7:0] data_rd;
+  reg[7:0] data_rd_z1;
+  reg[7:0] data_wr;
+  reg[7:0] data_wr_z1;
+  // Write to dev registers
+  reg 		wr_en;
+  // Device registers
+  reg[7:0] dev_regs[3:0];
 
-  wire pos_edge;
-  wire neg_edge;
+  	// Register MOSI with falling edge CPOL=0 CPHA1
+	always @(negedge sclk) begin
+		if(cs == 0) begin
+			spi_data_reg <= {spi_data_reg[6:0],mosi};
+		end
+	end
 
-	always @(posedge clk) begin
-		if(rst_n == 0) begin
+	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
+	always @(posedge sclk, posedge cs, negedge rst_n) begin
+		if((rst_n == 0) || (cs == 1)) begin
 			spi_state 	<= Idle;
-			spi_data 	<= 0;
 			index 		<= 0;
+			addr_reg 	<= 0;
+			data_rd 	<= 0;
+			data_rd_z1 	<= 0;
 		end else begin
-			// Check if chip is selected
-			if(cs == 0) begin
-				case(spi_state)
-					// Wait for a cmd to be recevied
-					Idle: begin
-						// Wait for a falling edge on sclk (cpol=0, cpha=1)
-						if(neg_edge == 1) begin
-							// Register new bit received
-							spi_data <= {spi_data[6:0],mosi};
-							// If all bits has been received
-							if(index < 8) begin
-								index <= index+1;
-							end
+			case(spi_state)
+				// Wait for a cmd to be recevied
+				Idle: begin
+					// Check if byte has been received
+					if(index == 8) begin
+						index <= 1;
+						// Read command
+						if(spi_data_reg[7] == 1) begin
+							spi_state <= Get_data;
+							addr_reg 	<= 8'h7F & spi_data_reg;
+						// Write command	
+						end else begin
+							spi_state <= Write;
+							addr_reg 	<= 8'h7F & spi_data_reg;
 						end
-						if(index == 8) begin
-							if(pos_edge == 1) begin
-								index <= 7;
-								spi_state <= Read;
-							end
-						end 
+					end else begin
+						// Count the number of bits shifted into spi_data_reg
+						index <= index + 1;
 					end
-					Read: begin
-						if(pos_edge == 1) begin
-							// If byte is output, end read
-							if(index == 0) begin
-								spi_state <= Idle;
-							end else begin
-								// Decrement counter 
-								index 	<= index-1;
-							end
-						end
+				end
+				Get_data: begin
+					// sample data into SCLK clock domain
+					data_rd_z1 	<=  dev_regs[addr_reg];
+					data_rd 	<= data_rd_z1;
+					if(index == 8) begin
+						spi_state 	<= Read;
+						index 		<= 7;
+					end else begin
+						// Count the number of bits shifted into spi_data_reg
+						index <= index + 1;
 					end
-					default:;	
-				endcase 
-			// If CS is not active, disable all outputs 
-			end else begin
-				spi_state 	<= Idle;
-				spi_data 	<= 0;
-				index 		<= 0;
-			end
+				end
+				Read: begin
+					// If byte is output, end read
+					if(index == 0) begin
+						spi_state <= Idle;
+					end else begin
+						// Decrement counter 
+						index 	<= index-1;
+					end
+				end
+				Write: begin
+					if(index == 8) begin
+					end else begin
+						index <= index + 1;
+					end				
+				end
+				default:;	
+			endcase 
 		end
 	end 
 
 	always @(*) begin
 		case(spi_state)
 			Idle: begin
-				data_out 	<= 0;
 				miso 		<= 0;
+				data_wr 	<= 0;
+				wr_en 		<= 0;
 			end
 			Read: begin
-				// Assign response value
-				if(spi_data == 8'h56) begin
-					data_out 	<= 8'h96;
-				end else begin
-					data_out 	<= 8'hAA;
-				end
 				// Assign bit to miso output
-				miso 	<= data_out[index];
+				miso 		<= data_rd[index];
+				data_wr 	<= 0;
+				wr_en 		<= 0;
+			end
+			Write: begin
+				miso 		<= 0;
+				// If data is rec, enable write
+				if(index == 8) begin
+					data_wr <= spi_data_reg;
+					wr_en 		<= 1;
+				end
 			end
 		endcase
 	end
 
-	edge_detector #(0) pos_edge_det(
-		.clk(clk),
-		.rst_n(rst_n),
-		.signal(sclk),
-		.edge_detected(pos_edge));
-
-	edge_detector #(1) neg_edge_det(
-		.clk(clk),
-		.rst_n(rst_n),
-		.signal(sclk),
-		.edge_detected(neg_edge));
+	// Update the registers
+	always @(posedge clk) begin
+		if(rst_n == 0) begin
+			// Dev Registers assignment
+			dev_regs[0] = 8'h96;
+			dev_regs[1] = 8'h01;
+			dev_regs[2] = 8'h02;
+			dev_regs[3] = 8'h03;		
+		end else begin
+			// Check if register must be update
+			if(wr_en == 1) begin
+				data_wr_z1 			<= data_wr;
+				dev_regs[addr_reg] 	<= data_wr_z1;
+			end 
+		end
+	end
 
 endmodule

@@ -7,8 +7,8 @@ from cocotb.triggers import ClockCycles, RisingEdge, RisingEdge
 from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
 
 @cocotb.test()
-async def test_adder(dut):
-  dut._log.info("Start")
+async def test_spi_read(dut):
+  dut._log.info("Start SPI read test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -16,13 +16,13 @@ async def test_adder(dut):
   # Get spi port
   spi_bus = SpiBus.from_entity(dut)
   spi_config = SpiConfig(
-        word_width  = 16,
-        sclk_freq   = 10e6,
+        word_width  = 24,
+        sclk_freq   = 25e6,
         cpol        = False,
         cpha        = True,
         msb_first   = True,
         )
-  spi_master = SpiMaster(spi_bus, spi_config)
+  spi_master_rd = SpiMaster(spi_bus, spi_config)
   # Reset
   dut._log.info("Reset")
   dut.ena.value = 1
@@ -34,14 +34,64 @@ async def test_adder(dut):
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
 
-  # Read SPI reg 0x56
+  # Read SPI reg 0x00
   await RisingEdge(dut.clk)
   await cocotb.triggers.Timer(1,'ps')
-  await spi_master.write([0x0000])
-  read_bytes = await spi_master.read()
+  await spi_master_rd.write([0x800000])
+  read_bytes = await spi_master_rd.read()
+  print(read_bytes)
+  # Set the input values, wait one clock cycle, and check the output
+  await ClockCycles(dut.clk, 5)
+  assert int(''.join(str(i) for i in read_bytes)) == 150
+
+@cocotb.test()
+async def test_spi_write(dut):
+  dut._log.info("Start SPI write test")
+  
+  # Our example module doesn't use clock and reset, but we show how to use them here anyway.
+  clock = Clock(dut.clk, 20, units="ns")
+  cocotb.start_soon(clock.start())
+  # Get spi port
+  spi_bus = SpiBus.from_entity(dut)
+  spi_config = SpiConfig(
+        word_width  = 24,
+        sclk_freq   = 25e6,
+        cpol        = False,
+        cpha        = True,
+        msb_first   = True,
+        )
+  spi_master_rd = SpiMaster(spi_bus, spi_config)
+  spi_config = SpiConfig(
+        word_width  = 16,
+        sclk_freq   = 10e6,
+        cpol        = False,
+        cpha        = True,
+        msb_first   = True,
+        )
+  spi_master_wr = SpiMaster(spi_bus, spi_config)
+  # Reset
+  dut._log.info("Reset")
+  dut.ena.value = 1
+  dut.uio_in.value = 0
+  dut.rst_n.value = 0
+  await ClockCycles(dut.clk, 10)
+
+  # Out of reset
+  dut.rst_n.value = 1
+  await ClockCycles(dut.clk, 5)
+
+  # Write SPI reg 0x01 data 0xAA
+  await RisingEdge(dut.clk)
+  await cocotb.triggers.Timer(1,'ps')
+  await spi_master_wr.write([0x01AA])
+  # Read SPI reg 0x00
+  await RisingEdge(dut.clk)
+  await cocotb.triggers.Timer(1,'ps')
+  await spi_master_rd.write([0x810000])
+  read_bytes = await spi_master_rd.read()
   print(read_bytes)
 
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
 
-  assert int(''.join(str(i) for i in read_bytes)) == 150
+  assert int(''.join(str(i) for i in read_bytes)) == 170
