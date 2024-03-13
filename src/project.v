@@ -58,7 +58,14 @@ module tt_um_spi_test_djuara (
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
 	/*always @(posedge sclk, negedge rst_n, posedge cs) begin*/
 	always @(posedge sclk or negedge rst_n) begin
-		if((rst_n == 0) || (cs == 1)) begin
+		if(rst_n == 0)  begin
+			spi_state 	<= Idle;
+			index 		<= 0;
+			addr_reg 	<= 0;
+			data_rd 	<= 0;
+			data_rd_z1 	<= 0;
+		// Avoid Yosys synthesis bug
+		end else if(cs == 1) begin
 			spi_state 	<= Idle;
 			index 		<= 0;
 			addr_reg 	<= 0;
