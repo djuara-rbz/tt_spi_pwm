@@ -50,13 +50,13 @@ module tt_um_spi_test_djuara (
 
  	// Register MOSI with falling edge CPOL=0 CPHA1
 	always @(negedge sclk) begin
-		//if(cs == 0) begin
+		if(cs == 0) begin
 			spi_data_reg <= {spi_data_reg[6:0],mosi};
-		//end
+		end
 	end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
-	always @(posedge sclk, negedge rst_n, posedge cs) begin
+	/*always @(posedge sclk, negedge rst_n, posedge cs) begin
 		if((rst_n == 0) || (cs == 1)) begin
 			spi_state 	<= Idle;
 			index 		<= 0;
@@ -115,7 +115,7 @@ module tt_um_spi_test_djuara (
 			endcase 
 		end
 	end 
-
+*/
 	// Set outputs depending on state
 	always @(*) begin
 		case(spi_state)
@@ -150,7 +150,7 @@ module tt_um_spi_test_djuara (
 	end
 
 	// Update the registers
-	always @(posedge clk, negedge rst_n) begin
+/*	always @(posedge clk, negedge rst_n) begin
 		if(rst_n == 0) begin
 			// Dev Registers assignment
 			dev_regs[0] <= 8'h96;
@@ -165,5 +165,5 @@ module tt_um_spi_test_djuara (
 			end 
 		end
 	end
-
+*/
 endmodule
