@@ -120,35 +120,43 @@ module tt_um_spi_test_djuara (
 	always @(*) begin
 		case(spi_state)
 			Idle: begin
-				miso 		<= 0;
-				data_wr 	<= 0;
-				wr_en 		<= 0;
+				miso 		= 0;
+				data_wr 	= 0;
+				wr_en 		= 0;
 			end
 			Read: begin
 				// Assign bit to miso output
-				miso 		<= data_rd[index];
-				data_wr 	<= 0;
-				wr_en 		<= 0;
+				miso 		= data_rd[index];
+				data_wr 	= 0;
+				wr_en 		= 0;
 			end
 			Write: begin
 				miso 		<= 0;
 				// If data is rec, enable write
 				if(index == 8) begin
-					data_wr <= spi_data_reg;
-					wr_en 		<= 1;
+					data_wr 	= spi_data_reg;
+					wr_en 		= 1;
+				end else begin
+					data_wr 	= 0;
+					wr_en 		= 0;
 				end
+			end
+			default: begin
+				miso 		= 0;
+				data_wr 	= 0;
+				wr_en 		= 0;
 			end
 		endcase
 	end
 
 	// Update the registers
-	always @(posedge clk) begin
+	always @(posedge clk, negedge rst_n) begin
 		if(rst_n == 0) begin
 			// Dev Registers assignment
-			dev_regs[0] = 8'h96;
-			dev_regs[1] = 8'h01;
-			dev_regs[2] = 8'h02;
-			dev_regs[3] = 8'h03;		
+			dev_regs[0] <= 8'h96;
+			dev_regs[1] <= 8'h01;
+			dev_regs[2] <= 8'h02;
+			dev_regs[3] <= 8'h03;		
 		end else begin
 			// Check if register must be update
 			if(wr_en == 1) begin
