@@ -5,7 +5,8 @@
 
 `define default_netname none
 
-module spi_own_clock (
+module spi_sampled (
+	input 	wire 	clk,	// System clk
     input  	wire 	sclk,   // SPI input clk
     input  	wire 	mosi,   // SPI input data mosi
     output 	reg 	miso,   // SPI output data miso
@@ -18,85 +19,81 @@ module spi_own_clock (
 );
 
   reg[1:0] spi_state;
-  localparam Idle 		= 2'b00;
-  localparam Get_data 	= 2'b01;
-  localparam Read 		= 2'b10;
-  localparam Write 		= 2'b11;
+  localparam Idle = 2'b00;
+  localparam Read = 2'b01;
+  localparam Write = 2'b10;
   reg[7:0] spi_data_reg;
   reg[3:0] index;
-  // CDC registers
-  reg[7:0] data_rd;
-  reg[7:0] data_rd_z1;
+
+  wire pos_edge;
+  wire neg_edge;
 
  	// Register MOSI with falling edge CPOL=0 CPHA1
-	always @(negedge sclk) begin
+	always @(posedge clk) begin
 		if(cs == 0) begin
-			spi_data_reg <= {spi_data_reg[6:0],mosi};
+			if(neg_edge == 1) begin
+				spi_data_reg <= {spi_data_reg[6:0],mosi};
+			end
 		end
 	end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
-	always @(posedge sclk, negedge rst_n, posedge cs) begin
-		if(rst_n == 0)  begin
-			spi_state 	<= Idle;
-			index 		<= 0;
-			addr_reg 	<= 0;
-			data_rd 	<= 0;
-			data_rd_z1 	<= 0;
-		// Avoid Yosys synthesis bug
+	always @(posedge clk) begin
+		if(rst_n == 0) begin
+			spi_state 		<= Idle;
+			spi_data_reg 	<= 0;
+			index 			<= 0;
+			addr_reg 		<= 0;
+		// If CS is not active, disable all outputs 
 		end else if(cs == 1) begin
-			spi_state 	<= Idle;
-			index 		<= 0;
-			addr_reg 	<= 0;
-			data_rd 	<= 0;
-			data_rd_z1 	<= 0;
+			spi_state 		<= Idle;
+			spi_data_reg 	<= 0;
+			index 			<= 0;
+			addr_reg 		<= 0;
 		end else begin
 			case(spi_state)
 				// Wait for a cmd to be recevied
 				Idle: begin
-					// Check if byte has been received
-					if(index == 8) begin
-						index <= 1;
-						addr_reg 	<= 8'h7F & spi_data_reg;
-						// Read command
-						if(spi_data_reg[7] == 1) begin
-							spi_state <= Get_data;
-						// Write command	
-						end else begin
-							spi_state <= Write;
+					// Wait for a falling edge on sclk (cpol=0, cpha=1)
+					if(neg_edge == 1) begin
+						// If all bits has been received
+						if(index < 8) begin
+							index <= index+1;
 						end
-					end else begin
-						// Count the number of bits shifted into spi_data_reg
-						index <= index + 1;
 					end
-				end
-				Get_data: begin
-					// sample data into SCLK clock domain
-					data_rd_z1 	<=  data_rd_i;
-					data_rd 	<= data_rd_z1;
 					if(index == 8) begin
-						spi_state 	<= Read;
-						index 		<= 7;
-					end else begin
-						// Count the number of bits shifted into spi_data_reg
-						index <= index + 1;
-					end
+						if(pos_edge == 1) begin
+							addr_reg 	<= 8'h7F & spi_data_reg;
+							//Read command
+							if(spi_data_reg[7] == 1) begin
+								index <= 7;
+								spi_state <= Read;
+							end else begin
+								index <= 1;
+								spi_state <= Write;
+							end
+						end
+					end 
 				end
 				Read: begin
-					// If byte is output, end read
-					if(index == 0) begin
-						spi_state <= Idle;
-					end else begin
-						// Decrement counter 
-						index 	<= index-1;
+					if(pos_edge == 1) begin
+						// If byte is output, end read
+						if(index == 0) begin
+							spi_state <= Idle;
+						end else begin
+							// Decrement counter 
+							index 	<= index-1;
+						end
 					end
 				end
 				Write: begin
-					if(index == 8) begin
-					end else begin
-						index <= index + 1;
-					end				
-				end
+					if(pos_edge == 1) begin
+						if(index == 8) begin
+						end else begin
+							index <= index + 1;
+						end				
+					end
+				end 
 				default:;	
 			endcase 
 		end
@@ -112,7 +109,7 @@ module spi_own_clock (
 			end
 			Read: begin
 				// Assign bit to miso output
-				miso 		= data_rd[index];
+				miso 		= data_rd_i[index];
 				data_wr 	= 0;
 				wr_en 		= 0;
 			end
@@ -134,5 +131,17 @@ module spi_own_clock (
 			end
 		endcase
 	end
+
+	edge_detector #(0) pos_edge_det(
+		.clk(clk),
+		.rst_n(rst_n),
+		.signal(sclk),
+		.edge_detected(pos_edge));
+
+	edge_detector #(1) neg_edge_det(
+		.clk(clk),
+		.rst_n(rst_n),
+		.signal(sclk),
+		.edge_detected(neg_edge));
 
 endmodule

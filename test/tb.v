@@ -23,16 +23,24 @@ module tb ();
   wire [7:0] uio_oe;
 
   // Wire for cocotb testing
-  wire sclk;
-  wire mosi;
-  wire miso;
-  wire cs;
+  wire clk_sclk;
+  wire clk_mosi;
+  wire clk_miso;
+  wire clk_cs;
+  wire sampled_sclk;
+  wire sampled_mosi;
+  wire sampled_miso;
+  wire sampled_cs;
 
-  assign miso = uo_out[0];
-  assign ui_in[0] = sclk;
-  assign ui_in[1] = mosi;
-  assign ui_in[2] = cs;
-  assign ui_in[7:3] = 5'b0;
+  assign clk_miso = uo_out[0];
+  assign sampled_miso = uo_out[1];
+  assign ui_in[0] = clk_sclk;
+  assign ui_in[1] = clk_mosi;
+  assign ui_in[2] = clk_cs;
+  assign ui_in[3] = sampled_sclk;
+  assign ui_in[4] = sampled_mosi;
+  assign ui_in[5] = sampled_cs;
+  assign ui_in[7:6] = 2'b0;
 
   // Replace tt_um_example with your module name:
   tt_um_spi_test_djuara user_project (
