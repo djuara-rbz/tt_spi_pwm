@@ -49,11 +49,11 @@ module tt_um_spi_test_djuara (
   reg[7:0] dev_regs[3:0];
 
   	// Register MOSI with falling edge CPOL=0 CPHA1
-	always @(negedge sclk) begin
-		if(cs == 0) begin
-			spi_data_reg <= {spi_data_reg[6:0],mosi};
-		end
-	end
+	//always @(negedge sclk) begin
+	//	if(cs == 0) begin
+	//		spi_data_reg <= {spi_data_reg[6:0],mosi};
+	//	end
+	//end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
 	always @(posedge sclk, posedge cs, negedge rst_n) begin
@@ -116,6 +116,7 @@ module tt_um_spi_test_djuara (
 		end
 	end 
 
+	// Set outputs depending on state
 	always @(*) begin
 		case(spi_state)
 			Idle: begin
