@@ -57,7 +57,7 @@ module tt_um_spi_test_djuara (
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
 	/*always @(posedge sclk, negedge rst_n, posedge cs) begin*/
-	always @(posedge sclk, negedge rst_n) begin
+	always @(posedge sclk, posedge rst_n) begin
 		if((rst_n == 0) || (cs == 1)) begin
 			spi_state 	<= Idle;
 			index 		<= 0;
