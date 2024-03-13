@@ -17,6 +17,7 @@ project:
   source_files:        
     - "project.v"
     - "edge_detector.v"
+    - "spi_own_clock.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 pinout:
