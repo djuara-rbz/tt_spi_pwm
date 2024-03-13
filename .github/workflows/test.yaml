@@ -23,6 +23,7 @@ jobs:
           pip install cocotb~=1.8.0
           cocotb-config --libpython
           cocotb-config --python-bin
+          pip install cocotbext-spi
 
       - name: Run tests
         run: |
