@@ -29,18 +29,18 @@ module spi_sampled (
   wire neg_edge;
 
  	// Register MOSI with falling edge CPOL=0 CPHA1
-	always @(posedge clk) begin
-		if(cs == 0) begin
+	always @(posedge clk or posedge cs) begin
+		if(cs == 1) begin
+			spi_data_reg <= 0;
+		end else begin
 			if(neg_edge == 1) begin
 				spi_data_reg <= {spi_data_reg[6:0],mosi};
 			end
-		end else begin
-			spi_data_reg <= 0;
 		end
 	end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
-	always @(posedge clk, negedge rst_n) begin
+	always @(posedge clk or negedge rst_n or posedge cs) begin
 		if(rst_n == 0) begin
 			spi_state 		<= Idle;
 			index 			<= 0;

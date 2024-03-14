@@ -29,16 +29,16 @@ module spi_own_clock (
   reg[7:0] data_rd_z1;
 
  	// Register MOSI with falling edge CPOL=0 CPHA1
-	always @(negedge sclk, posedge cs) begin
-		if(cs == 0) begin
-			spi_data_reg <= {spi_data_reg[6:0],mosi};
-		end else begin
+	always @(negedge sclk or posedge cs) begin
+		if(cs == 1) begin
 			spi_data_reg <= 0;
+		end else begin
+			spi_data_reg <= {spi_data_reg[6:0],mosi};
 		end
 	end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
-	always @(posedge sclk, negedge rst_n, posedge cs) begin
+	always @(posedge sclk or negedge rst_n or posedge cs) begin
 		if(rst_n == 0)  begin
 			spi_state 	<= Idle;
 			index 		<= 0;
