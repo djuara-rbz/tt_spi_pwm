@@ -38,7 +38,6 @@ module spi_sampled (
 		end else begin
 			spi_data_reg <= 0;
 		end
-		end
 	end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
