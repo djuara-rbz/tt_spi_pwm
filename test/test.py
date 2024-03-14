@@ -11,7 +11,8 @@ freq = 10e6
 @cocotb.test()
 async def test_spi_read_sampled(dut):
   dut._log.info("Start SPI Sampled read test")
-  
+  dut.ui_in.value = 0x00
+  dut.rst_n.value = 1
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
   cocotb.start_soon(clock.start())
