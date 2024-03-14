@@ -35,6 +35,9 @@ module spi_sampled (
 			if(neg_edge == 1) begin
 				spi_data_reg <= {spi_data_reg[6:0],mosi};
 			end
+		end else begin
+			spi_data_reg <= 0;
+		end
 		end
 	end
 
@@ -108,7 +111,7 @@ module spi_sampled (
 			end
 			Read: begin
 				// Assign bit to miso output
-				miso 		= data_rd_i[index];
+				miso 		= data_rd_i[index[2:0]];
 				data_wr 	= 0;
 				wr_en 		= 0;
 			end

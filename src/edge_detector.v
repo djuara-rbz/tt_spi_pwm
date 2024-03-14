@@ -9,7 +9,7 @@ module edge_detector
 
 	reg signal_z1;
 
-	always @(posedge clk) begin
+	always @(posedge clk, negedge rst_n) begin
 		if(rst_n == 0) begin
 			signal_z1 <= 0;
 		end else begin

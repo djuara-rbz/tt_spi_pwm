@@ -38,8 +38,8 @@ module tt_um_spi_test_djuara (
   assign cs_sampled			= ui_in[5];  // uo_in[2] is the spi cs
 
   // Address from SPI bus
-  reg[7:0] addr_reg_clk;
-  reg[7:0] addr_reg_sampled;
+  reg[1:0] addr_reg_clk;
+  reg[1:0] addr_reg_sampled;
   // CDC registers
   reg[7:0] data_rd_clk;
   reg[7:0] data_rd_sampled;

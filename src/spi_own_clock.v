@@ -114,7 +114,7 @@ module spi_own_clock (
 			end
 			Read: begin
 				// Assign bit to miso output
-				miso 		= data_rd[index];
+				miso 		= data_rd[index[2:0]];
 				data_wr 	= 0;
 				wr_en 		= 0;
 			end
