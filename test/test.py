@@ -40,7 +40,9 @@ async def test_spi_read_sampled(dut):
   # Read SPI reg 0x00
   await RisingEdge(dut.clk)
   await cocotb.triggers.Timer(1,'ps')
+  dut._log.info("Going to read values")
   await spi_master_rd.write([0x8000])
+  dut._log.info("Read values")
   read_bytes = await spi_master_rd.read()
   print(read_bytes)
   # Set the input values, wait one clock cycle, and check the output
