@@ -28,6 +28,12 @@ module spi_sampled (
   wire pos_edge;
   wire neg_edge;
 
+  initial begin
+	spi_state 	= Idle;
+	index 		= 0;
+	miso 		= 0;
+  end
+
  	// Register MOSI with falling edge CPOL=0 CPHA1
 	always @(posedge clk or posedge cs) begin
 		if(cs == 1) begin
