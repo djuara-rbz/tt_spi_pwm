@@ -17,11 +17,11 @@ module tt_um_spi_test_djuara (
 );
 
   wire 	sclk_clk;
-  reg 	miso_clk;
+  wire 	miso_clk;
   wire	mosi_clk;
   wire	cs_clk;
   wire 	sclk_sampled;
-  reg 	miso_sampled;
+  wire 	miso_sampled;
   wire	mosi_sampled;
   wire	cs_sampled;
 
@@ -38,17 +38,17 @@ module tt_um_spi_test_djuara (
   assign cs_sampled			= ui_in[5];  // uo_in[2] is the spi cs
 
   // Address from SPI bus
-  reg[1:0] addr_reg_clk;
-  reg[1:0] addr_reg_sampled;
+  wire[1:0] addr_reg_clk;
+  wire[1:0] addr_reg_sampled;
   // CDC registers
-  reg[7:0] data_rd_clk;
-  reg[7:0] data_rd_sampled;
-  reg[7:0] data_wr_clk;
-  reg[7:0] data_wr_sampled;
+  wire[7:0] data_rd_clk;
+  wire[7:0] data_rd_sampled;
+  wire[7:0] data_wr_clk;
+  wire[7:0] data_wr_sampled;
   reg[7:0] data_wr_z1;
   // Write to dev registers
-  reg 		wr_en_clk;
-  reg 		wr_en_sampled;
+  wire 		wr_en_clk;
+  wire 		wr_en_sampled;
   // Device registers
   reg[7:0] dev_regs[3:0];
 
