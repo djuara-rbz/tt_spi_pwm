@@ -11,7 +11,7 @@ module spi_own_clock (
     output 	reg 	miso,   // SPI output data miso
     input  	wire 	cs,  	// SPI input cs
     input  	wire     rst_n,  // reset_n - low to reset
-	output 	reg[7:0] addr_reg,	// reg address to be accessed
+	output 	reg[1:0] addr_reg,	// reg address to be accessed
 	output 	reg[7:0] data_wr,	// data to be written to register
 	input  	wire[7:0] data_rd_i,	// data to read from register
 	output 	reg 	wr_en	// write data to register
