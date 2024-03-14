@@ -8,10 +8,25 @@ from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
 
 freq = 10e6
 
+
+def init_ports(dut):
+	dut.sampled_cs.value = 1
+	dut.sampled_sclk.value = 0
+	dut.sampled_mosi.value = 0
+	dut.clk_cs.value = 1
+	dut.clk_sclk.value = 0
+	dut.clk_mosi.value = 0
+	dut.ena.value = 1
+	dut.uio_in.value = 0
+
+
 @cocotb.test()
 async def test_spi_read_clk(dut):
   dut._log.info("Start SPI clk read test")
   
+  # Initialize ports values
+  init_ports(dut)
+
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
   cocotb.start_soon(clock.start())
@@ -26,13 +41,11 @@ async def test_spi_read_clk(dut):
         msb_first   = True,
         )
   spi_master_rd = SpiMaster(spi_bus, spi_config)
+
   # Reset
   dut._log.info("Reset")
-  dut.ena.value = 1
-  dut.uio_in.value = 0
   dut.rst_n.value = 0
   await ClockCycles(dut.clk, 10)
-
   # Out of reset
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
@@ -50,6 +63,9 @@ async def test_spi_read_clk(dut):
 @cocotb.test()
 async def test_spi_write_clk(dut):
   dut._log.info("Start SPI clk write test")
+  
+  # Initialize ports values
+  init_ports(dut)
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -74,11 +90,8 @@ async def test_spi_write_clk(dut):
   spi_master_wr = SpiMaster(spi_bus, spi_config)
   # Reset
   dut._log.info("Reset")
-  dut.ena.value = 1
-  dut.uio_in.value = 0
   dut.rst_n.value = 0
   await ClockCycles(dut.clk, 10)
-
   # Out of reset
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
@@ -103,6 +116,9 @@ async def test_spi_write_clk(dut):
 async def test_spi_reset_clk(dut):
   dut._log.info("Start SPI clk reset test")
   
+  # Initialize ports values
+  init_ports(dut)
+  
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
   cocotb.start_soon(clock.start())
@@ -126,11 +142,8 @@ async def test_spi_reset_clk(dut):
   spi_master_wr = SpiMaster(spi_bus, spi_config)
   # Reset
   dut._log.info("Reset")
-  dut.ena.value = 1
-  dut.uio_in.value = 0
   dut.rst_n.value = 0
   await ClockCycles(dut.clk, 10)
-
   # Out of reset
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
@@ -163,8 +176,10 @@ async def test_spi_reset_clk(dut):
 @cocotb.test()
 async def test_spi_read_sampled(dut):
   dut._log.info("Start SPI Sampled read test")
-  dut.ui_in.value = 0x00
-  dut.rst_n.value = 1
+  
+  # Initialize ports values
+  init_ports(dut)
+
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
   cocotb.start_soon(clock.start())
@@ -178,13 +193,11 @@ async def test_spi_read_sampled(dut):
         msb_first   = True,
         )
   spi_master_rd = SpiMaster(spi_bus, spi_config)
+  
   # Reset
   dut._log.info("Reset")
-  dut.ena.value = 1
-  dut.uio_in.value = 0
   dut.rst_n.value = 0
   await ClockCycles(dut.clk, 10)
-
   # Out of reset
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
@@ -204,6 +217,9 @@ async def test_spi_read_sampled(dut):
 @cocotb.test()
 async def test_spi_write_sampled(dut):
   dut._log.info("Start SPI Sampled write test")
+  
+  # Initialize ports values
+  init_ports(dut)
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -228,11 +244,8 @@ async def test_spi_write_sampled(dut):
   spi_master_wr = SpiMaster(spi_bus, spi_config)
   # Reset
   dut._log.info("Reset")
-  dut.ena.value = 1
-  dut.uio_in.value = 0
   dut.rst_n.value = 0
   await ClockCycles(dut.clk, 10)
-
   # Out of reset
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
@@ -257,6 +270,9 @@ async def test_spi_write_sampled(dut):
 async def test_spi_reset_sampled(dut):
   dut._log.info("Start SPI Sampled reset test")
   
+  # Initialize ports values
+  init_ports(dut)
+  
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
   cocotb.start_soon(clock.start())
@@ -278,13 +294,11 @@ async def test_spi_reset_sampled(dut):
         msb_first   = True,
         )
   spi_master_wr = SpiMaster(spi_bus, spi_config)
+  
   # Reset
   dut._log.info("Reset")
-  dut.ena.value = 1
-  dut.uio_in.value = 0
   dut.rst_n.value = 0
   await ClockCycles(dut.clk, 10)
-
   # Out of reset
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 5)
