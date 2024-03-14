@@ -6,7 +6,6 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, RisingEdge
 from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
 
-
 freq = 10e6
 
 @cocotb.test()
