@@ -19,9 +19,10 @@ module spi_sampled (
 );
 
   reg[1:0] spi_state;
-  localparam Idle = 2'b00;
-  localparam Read = 2'b01;
-  localparam Write = 2'b10;
+  localparam Idle 		= 2'b00;
+  localparam Get_data 	= 2'b01;
+  localparam Read 		= 2'b10;
+  localparam Write 		= 2'b11;
   reg[7:0] spi_data_reg;
   reg[3:0] index;
 
@@ -38,7 +39,7 @@ module spi_sampled (
 	end
 
 	// Rising edge of SCLK, read commands (set MISO) and write commands (store data)
-	always @(posedge clk) begin
+	always @(posedge clk, negedge rst_n) begin
 		if(rst_n == 0) begin
 			spi_state 		<= Idle;
 			index 			<= 0;

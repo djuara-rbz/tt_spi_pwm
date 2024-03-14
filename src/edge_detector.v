@@ -11,14 +11,14 @@ module edge_detector
 
 	always @(posedge clk) begin
 		if(rst_n == 0) begin
-			signal_z1 = 0;
+			signal_z1 <= 0;
 		end else begin
-		   	signal_z1 = signal;
+		   	signal_z1 <= signal;
 		end
 	end 
 
 	// Detects risign edge
-	if(edge_type == 0) begin
+	if(edge_type == 0) begin 
 		assign edge_detected = signal & ~signal_z1;
 	// Detects falling edge
 	end else begin

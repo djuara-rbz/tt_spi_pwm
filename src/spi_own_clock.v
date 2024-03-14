@@ -29,9 +29,11 @@ module spi_own_clock (
   reg[7:0] data_rd_z1;
 
  	// Register MOSI with falling edge CPOL=0 CPHA1
-	always @(negedge sclk) begin
+	always @(negedge sclk, posedge cs) begin
 		if(cs == 0) begin
 			spi_data_reg <= {spi_data_reg[6:0],mosi};
+		end else begin
+			spi_data_reg <= 0;
 		end
 	end
 

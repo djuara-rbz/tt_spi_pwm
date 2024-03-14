@@ -11,16 +11,14 @@ freq = 10e6
 
 @cocotb.test()
 async def test_spi_read_sampled(dut):
-  dut._log.info("Start SPI read test")
+  dut._log.info("Start SPI Sampled read test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
   cocotb.start_soon(clock.start())
   # Get spi port
-  #spi_bus = SpiBus.from_entity(dut)
   spi_bus = SpiBus.from_prefix(dut,"sampled")
   spi_config = SpiConfig(
-        #word_width  = 24,
         word_width  = 16,
         sclk_freq   = freq,
         cpol        = False,
@@ -51,7 +49,7 @@ async def test_spi_read_sampled(dut):
 
 @cocotb.test()
 async def test_spi_write_sampled(dut):
-  dut._log.info("Start SPI write test")
+  dut._log.info("Start SPI Sampled write test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -59,7 +57,6 @@ async def test_spi_write_sampled(dut):
   # Get spi port
   spi_bus = SpiBus.from_prefix(dut,"sampled")
   spi_config = SpiConfig(
-        #word_width  = 24,
         word_width  = 16,
         sclk_freq   = freq,
         cpol        = False,
@@ -104,7 +101,7 @@ async def test_spi_write_sampled(dut):
 
 @cocotb.test()
 async def test_spi_reset_sampled(dut):
-  dut._log.info("Start SPI write test")
+  dut._log.info("Start SPI Sampled reset test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -112,7 +109,6 @@ async def test_spi_reset_sampled(dut):
   # Get spi port
   spi_bus = SpiBus.from_prefix(dut,"sampled")
   spi_config = SpiConfig(
-        #word_width  = 24,
         word_width  = 16,
         sclk_freq   = freq,
         cpol        = False,
@@ -166,7 +162,7 @@ async def test_spi_reset_sampled(dut):
 
 @cocotb.test()
 async def test_spi_read_clk(dut):
-  dut._log.info("Start SPI read test")
+  dut._log.info("Start SPI clk read test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -205,7 +201,7 @@ async def test_spi_read_clk(dut):
 
 @cocotb.test()
 async def test_spi_write_clk(dut):
-  dut._log.info("Start SPI write test")
+  dut._log.info("Start SPI clk write test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
@@ -257,7 +253,7 @@ async def test_spi_write_clk(dut):
 
 @cocotb.test()
 async def test_spi_reset_clk(dut):
-  dut._log.info("Start SPI write test")
+  dut._log.info("Start SPI clk reset test")
   
   # Our example module doesn't use clock and reset, but we show how to use them here anyway.
   clock = Clock(dut.clk, 20, units="ns")
