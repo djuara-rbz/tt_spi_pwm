@@ -41,13 +41,11 @@ module spi_sampled (
 	always @(posedge clk) begin
 		if(rst_n == 0) begin
 			spi_state 		<= Idle;
-			spi_data_reg 	<= 0;
 			index 			<= 0;
 			addr_reg 		<= 0;
 		// If CS is not active, disable all outputs 
 		end else if(cs == 1) begin
 			spi_state 		<= Idle;
-			spi_data_reg 	<= 0;
 			index 			<= 0;
 			addr_reg 		<= 0;
 		end else begin
