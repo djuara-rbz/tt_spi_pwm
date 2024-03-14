@@ -101,7 +101,7 @@ module spi_sampled (
 	end 
 
 	// Set outputs depending on state
-	always @(*) begin
+	always @(spi_state or data_rd_i or index or spi_data_reg) begin
 		case(spi_state)
 			Idle: begin
 				miso 		= 0;
