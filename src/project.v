@@ -90,11 +90,12 @@ module tt_um_spi_test_djuara (
 			dev_regs[1] <= 8'h01;
 			dev_regs[2] <= 8'h02;
 			dev_regs[3] <= 8'h03;		
+	/*		dev_regs[4] <= 8'h01;		
+			dev_regs[5] <= 8'h80;
+			dev_regs[6] <= 8'hF0;
+			dev_regs[7] <= 8'hFA;		
+			dev_regs[8] <= 8'h02;		*/
 		end else begin
-			dev_regs[0] <= dev_regs[0];
-			dev_regs[1] <= dev_regs[1];
-			dev_regs[2] <= dev_regs[2];
-			dev_regs[3] <= dev_regs[3];		
 			// Check if register must be update
 			if(wr_en_clk == 1) begin
 				data_wr_z1 			<= data_wr_clk;
