@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge, RisingEdge
+from cocotb.triggers import ClockCycles, RisingEdge, RisingEdge, Timer
 from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
 
 freq = 10e6
@@ -18,6 +18,7 @@ def init_ports(dut):
 	dut.clk_mosi.value = 0
 	dut.ena.value = 1
 	dut.uio_in.value = 0
+	dut.pwm_start_ext.value = 0
 
 
 @cocotb.test()
@@ -55,7 +56,6 @@ async def test_spi_read_clk(dut):
   await cocotb.triggers.Timer(1,'ps')
   await spi_master_rd.write([0x800000])
   read_bytes = await spi_master_rd.read()
-  print(read_bytes)
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
   assert int(''.join(str(i) for i in read_bytes)) == 150
@@ -105,7 +105,6 @@ async def test_spi_write_clk(dut):
   await cocotb.triggers.Timer(1,'ps')
   await spi_master_rd.write([0x810000])
   read_bytes = await spi_master_rd.read()
-  print(read_bytes)
 
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
@@ -166,12 +165,11 @@ async def test_spi_reset_clk(dut):
   await cocotb.triggers.Timer(1,'ps')
   await spi_master_rd.write([0x810000])
   read_bytes = await spi_master_rd.read()
-  print(read_bytes)
 
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
 
-  assert int(''.join(str(i) for i in read_bytes)) == 1
+  assert int(''.join(str(i) for i in read_bytes)) == 0
 
 @cocotb.test()
 async def test_spi_read_sampled(dut):
@@ -209,7 +207,6 @@ async def test_spi_read_sampled(dut):
   await spi_master_rd.write([0x8000])
   dut._log.info("Read values")
   read_bytes = await spi_master_rd.read()
-  print(read_bytes)
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
   assert int(''.join(str(i) for i in read_bytes)) == 150
@@ -259,7 +256,6 @@ async def test_spi_write_sampled(dut):
   await cocotb.triggers.Timer(1,'ps')
   await spi_master_rd.write([0x8100])
   read_bytes = await spi_master_rd.read()
-  print(read_bytes)
 
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
@@ -321,9 +317,31 @@ async def test_spi_reset_sampled(dut):
   await cocotb.triggers.Timer(1,'ps')
   await spi_master_rd.write([0x8100])
   read_bytes = await spi_master_rd.read()
-  print(read_bytes)
-
   # Set the input values, wait one clock cycle, and check the output
   await ClockCycles(dut.clk, 5)
 
-  assert int(''.join(str(i) for i in read_bytes)) == 1
+  assert int(''.join(str(i) for i in read_bytes)) == 0
+
+@cocotb.test()
+async def test_pwm(dut):
+  dut._log.info("Start PWM test")
+  
+  # Initialize ports values
+  init_ports(dut)
+  # Our example module doesn't use clock and reset, but we show how to use them here anyway.
+  clock = Clock(dut.clk, 20, units="ns")
+  cocotb.start_soon(clock.start())
+	
+  dut.pwm_start_ext.value = 1
+  await Timer(100,units='us')
+  assert dut.pwm.value == 1
+  await Timer(1000,units='us')
+  assert dut.pwm.value == 0
+  await Timer(1000,units='us')
+  assert dut.pwm.value == 1
+  await Timer(1000,units='us')
+  assert dut.pwm.value == 0
+  await Timer(1000,units='us')
+  assert dut.pwm.value == 1
+  await Timer(1000,units='us')
+  assert dut.pwm.value == 0

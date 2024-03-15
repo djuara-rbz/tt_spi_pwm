@@ -5,7 +5,7 @@
 
 `define default_netname none
 
-module tt_um_spi_test_djuara (
+module tt_um_spi_pwm_djuara (
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
@@ -24,9 +24,10 @@ module tt_um_spi_test_djuara (
   wire 	miso_sampled;
   wire	mosi_sampled;
   wire	cs_sampled;
+  wire 	start_pwm_ext;		
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  		= {6'b0, miso_sampled, miso_clk};  // uo_out[0] is the miso_reg line
+  assign uo_out  		= {5'b0, pwm, miso_sampled, miso_clk};  // uo_out[0] is the miso_reg line
   assign uio_out 		= 0;
   assign uio_oe  		= 0;
 
@@ -36,10 +37,22 @@ module tt_um_spi_test_djuara (
   assign sclk_sampled		= ui_in[3];  // uo_in[0] is the spi clk
   assign mosi_sampled		= ui_in[4];  // uo_in[1] is the spi mosi
   assign cs_sampled			= ui_in[5];  // uo_in[2] is the spi cs
+  assign start_pwm_ext		= ui_in[6];	 // uo_in[6] is the external start of pwm
+	
+  parameter int ADDR_ID 			= 0;
+  parameter int ADDR_PWM_CTRL 		= 1;
+  parameter int ADDR_CYCLES_HIGH0 	= 2;
+  parameter int ADDR_CYCLES_HIGH1 	= 3;
+  parameter int ADDR_CYCLES_HIGH2 	= 4;
+  parameter int ADDR_CYCLES_HIGH3 	= 5;
+  parameter int ADDR_CYCLES_FREQ0 	= 6;
+  parameter int ADDR_CYCLES_FREQ1 	= 7;
+  parameter int ADDR_CYCLES_FREQ2 	= 8;
+  parameter int ADDR_CYCLES_FREQ3 	= 9;
 
   // Address from SPI bus
-  wire[1:0] addr_reg_clk;
-  wire[1:0] addr_reg_sampled;
+  wire[3:0] addr_reg_clk;
+  wire[3:0] addr_reg_sampled;
   // CDC registers
   wire[7:0] data_rd_clk;
   wire[7:0] data_rd_sampled;
@@ -50,7 +63,11 @@ module tt_um_spi_test_djuara (
   wire 		wr_en_clk;
   wire 		wr_en_sampled;
   // Device registers
-  reg[7:0] dev_regs[3:0];
+  reg [7:0] 	dev_regs [9:0];
+  wire 			start_pwm;		
+  wire[31:0]	cycles_high; 		
+  wire[31:0]	cycles_freq;		
+  wire 		pwm;		
 
 	// SPI driven with its own clock
 	spi_own_clock spi_own_clock_ins (
@@ -78,30 +95,50 @@ module tt_um_spi_test_djuara (
 		data_rd_sampled,	// data to read from register
 		wr_en_sampled		// write data to register
 	);
+	pwm_generator pwm_inst (
+		clk,			// System CLK
+	 	rst_n,			// Reset
+	 	start_pwm,		// Start PWM generation
+	 	cycles_high,	// Cycles of CLK that PWM is high
+	 	cycles_freq,	// Cycles of CLK of PWM freq
+		pwm				// PWM output
+	);
+
 	// Assign value of the register accessed
-	assign data_rd_clk = dev_regs[addr_reg_clk];
-	assign data_rd_sampled = dev_regs[addr_reg_sampled];
+	assign data_rd_clk 		= dev_regs[addr_reg_clk];
+	assign data_rd_sampled  = dev_regs[addr_reg_sampled];
+	assign start_pwm		= dev_regs[ADDR_PWM_CTRL][0] || start_pwm_ext;
+	assign cycles_high 		= {dev_regs[ADDR_CYCLES_HIGH3],dev_regs[ADDR_CYCLES_HIGH2],dev_regs[ADDR_CYCLES_HIGH1],dev_regs[ADDR_CYCLES_HIGH0]};
+	assign cycles_freq 		= {dev_regs[ADDR_CYCLES_FREQ3],dev_regs[ADDR_CYCLES_FREQ2],dev_regs[ADDR_CYCLES_FREQ1],dev_regs[ADDR_CYCLES_FREQ0]};
 
 	// Update the registers
 	always @(posedge clk, negedge rst_n) begin
 		if(rst_n == 0) begin
 			// Dev Registers assignment
-			dev_regs[0] <= 8'h96;
-			dev_regs[1] <= 8'h01;
-			dev_regs[2] <= 8'h02;
-			dev_regs[3] <= 8'h03;		
-	/*		dev_regs[4] <= 8'h01;		
-			dev_regs[5] <= 8'h80;
-			dev_regs[6] <= 8'hF0;
-			dev_regs[7] <= 8'hFA;		
-			dev_regs[8] <= 8'h02;		*/
+			dev_regs[ADDR_ID] 			<= 8'h96;	// ID Register
+			dev_regs[ADDR_PWM_CTRL]		<= 8'h00;	// Ctrl Register
+			dev_regs[ADDR_CYCLES_HIGH0] <= 8'h50;	// Cycles_high LSB
+			dev_regs[ADDR_CYCLES_HIGH1] <= 8'hC3;	// Cycles_high
+			dev_regs[ADDR_CYCLES_HIGH2] <= 8'h00;	// Cycles_high	
+			dev_regs[ADDR_CYCLES_HIGH3] <= 8'h00;	// Cycles_hich MSB
+			dev_regs[ADDR_CYCLES_FREQ0] <= 8'hA0;	// Cycles_freq LSB
+			dev_regs[ADDR_CYCLES_FREQ1] <= 8'h86;	// Cycles_freq
+			dev_regs[ADDR_CYCLES_FREQ2] <= 8'h01;	// Cycles_freq
+			dev_regs[ADDR_CYCLES_FREQ3] <= 8'h00;	// Cycles_freq MSB
 		end else begin
-			// Check if register must be update
-			if(wr_en_clk == 1) begin
-				data_wr_z1 			<= data_wr_clk;
-				dev_regs[addr_reg_clk] 	<= data_wr_z1;
-			end else if(wr_en_sampled == 1) begin
-				dev_regs[addr_reg_sampled] 	<= data_wr_sampled;
+			// Check if register must be update (only if reg accessed is writable)
+			if(wr_en_clk == 1 && addr_reg_clk != 0) begin
+				// If PWM is active, only allow access to ctrl reg
+				if(start_pwm == 0 || addr_reg_clk == ADDR_PWM_CTRL) begin
+					data_wr_z1 			<= data_wr_clk;
+					dev_regs[addr_reg_clk] 	<= data_wr_z1;
+				end
+			// Check if register must be update (only if reg accessed is writable)
+			end else if(wr_en_sampled == 1 && addr_reg_sampled != 0) begin
+				// If PWM is active, only allow access to ctrl reg
+				if(start_pwm == 0 || addr_reg_sampled == ADDR_PWM_CTRL) begin
+					dev_regs[addr_reg_sampled] 	<= data_wr_sampled;
+				end
 			end
 		end
 	end
