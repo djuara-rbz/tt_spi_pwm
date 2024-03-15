@@ -47,7 +47,7 @@ module tb ();
   assign ui_in[7] 	= 2'b0;
 
   // Replace tt_um_example with your module name:
-  tt_um_spi_test_djuara user_project (
+  tt_um_spi_pwm_djuara user_project (
 
       // Include power ports for the Gate Level test:
 `ifdef GL_TEST
