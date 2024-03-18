@@ -115,7 +115,7 @@ module tt_um_spi_pwm_djuara (
 			// Dev Registers assignment
 			dev_regs[ADDR_ID] 			<= 8'h96;	// ID Register
 			dev_regs[ADDR_PWM_CTRL]		<= 8'h00;	// Ctrl Register
-			dev_regs[ADDR_CYCLES_HIGH0] <= 8'h34;	// Cycles_high LSB
+			dev_regs[ADDR_CYCLES_HIGH0] <= 8'h14;	// Cycles_high LSB
 			dev_regs[ADDR_CYCLES_HIGH1] <= 8'h82;	// Cycles_high
 			dev_regs[ADDR_CYCLES_FREQ0] <= 8'h50;	// Cycles_freq LSB
 			dev_regs[ADDR_CYCLES_FREQ1] <= 8'hC3;	// Cycles_freq
