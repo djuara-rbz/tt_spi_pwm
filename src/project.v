@@ -5,7 +5,7 @@
 
 `define default_netname none
 
-module tt_um_spi_pwm_djuara (
+module tt_um_spi_pwm_djuara(
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
@@ -48,9 +48,11 @@ module tt_um_spi_pwm_djuara (
   parameter int ADDR_DUMMY_1 		= 6;
   parameter int ADDR_DUMMY_2 		= 7;
 
+  localparam ADDR_REG_LEN = 3;
+
   // Address from SPI bus
-  wire[3:0] addr_reg_clk;
-  wire[3:0] addr_reg_sampled;
+  wire[2:0] addr_reg_clk;
+  wire[2:0] addr_reg_sampled;
   // CDC registers
   wire[7:0] data_rd_clk;
   wire[7:0] data_rd_sampled;
@@ -61,7 +63,7 @@ module tt_um_spi_pwm_djuara (
   wire 		wr_en_clk;
   wire 		wr_en_sampled;
   // Device registers
-  reg [7:0] 	dev_regs [7:0];
+  reg [7:0] 	dev_regs [(2**ADDR_REG_LEN)-1:0];
   wire 			start_pwm;		
   wire[15:0]	cycles_high; 		
   wire[15:0]	cycles_freq;		
@@ -81,7 +83,7 @@ module tt_um_spi_pwm_djuara (
 	);
 
 	// SPI driven with system clock
-	spi_sampled spi_sampled_ins (
+	spi_sampled #(ADDR_REG_LEN) spi_sampled_ins (
 		clk,				// System clk
 		sclk_sampled,   	// SPI input clk
 		mosi_sampled,   	// SPI input data mosi
@@ -93,7 +95,7 @@ module tt_um_spi_pwm_djuara (
 		data_rd_sampled,	// data to read from register
 		wr_en_sampled		// write data to register
 	);
-	pwm_generator pwm_inst (
+	pwm_generator #(ADDR_REG_LEN) pwm_inst (
 		clk,			// System CLK
 	 	rst_n,			// Reset
 	 	start_pwm,		// Start PWM generation

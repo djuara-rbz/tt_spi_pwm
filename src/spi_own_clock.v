@@ -5,13 +5,15 @@
 
 `define default_netname none
 
-module spi_own_clock (
+module spi_own_clock 
+	#(parameter ADDR_REG_LEN=3)
+	(
     input  	wire 	sclk,   // SPI input clk
     input  	wire 	mosi,   // SPI input data mosi
     output 	reg 	miso,   // SPI output data miso
     input  	wire 	cs,  	// SPI input cs
     input  	wire     rst_n,  // reset_n - low to reset
-	output 	reg[3:0] addr_reg,	// reg address to be accessed
+	output 	reg[ADDR_REG_LEN-1:0] addr_reg,	// reg address to be accessed
 	output 	reg[7:0] data_wr,	// data to be written to register
 	input  	wire[7:0] data_rd_i,	// data to read from register
 	output 	reg 	wr_en	// write data to register
@@ -59,7 +61,7 @@ module spi_own_clock (
 					// Check if byte has been received
 					if(index == 8) begin
 						index <= 1;
-						addr_reg 	<= 8'h7F & spi_data_reg;
+						addr_reg 	<= spi_data_reg[ADDR_REG_LEN-1:0];
 						// Read command
 						if(spi_data_reg[7] == 1) begin
 							spi_state <= Get_data;

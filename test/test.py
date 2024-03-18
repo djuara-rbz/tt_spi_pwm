@@ -403,19 +403,13 @@ async def test_pwm_change_on(dut):
 
 	time_cycle 	= (int)(sys_freq/freq_pwm)
 	time_on 	= (int)(time_cycle*duty)
-	print(time_on)
-	print(time_cycle)
 
 	# Read SPI reg 0x00
 	read_bytes = await spi_read(dut, 0x8200, spi_master)
-	print(read_bytes)
 	assert int(''.join(str(i) for i in read_bytes)) == time_on & 0x00FF
 	read_bytes = await spi_read(dut, 0x8300, spi_master)
-	print(read_bytes)
 	assert int(''.join(str(i) for i in read_bytes)) == ((time_on & 0xFF00)>>8)
 	read_bytes = await spi_read(dut, 0x8400, spi_master)
-	print(read_bytes)
 	assert int(''.join(str(i) for i in read_bytes)) == time_cycle & 0x00FF
 	read_bytes = await spi_read(dut, 0x8500, spi_master)
-	print(read_bytes)
 	assert int(''.join(str(i) for i in read_bytes)) == ((time_cycle & 0xFF00)>>8)
