@@ -3,9 +3,9 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge, RisingEdge, Timer
+from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge, Timer
 from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
-import threading
+import timeit
 
 freq = 10e6
 
@@ -259,26 +259,163 @@ async def test_spi_read_out_sampled(dut):
 	read_bytes = await spi_read(dut, 0x8700, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 170
 
+
+async def config_pwm(dut, time_on, time_cycle):
+	spi_bus = SpiBus.from_prefix(dut,"sampled")
+	spi_master = SpiMaster(spi_bus, spi_config_16)
+	# Write SPI time on
+	data_sent = 0x0200 + (time_on & 0x00FF)
+	await spi_write(dut, data_sent, spi_master)
+	data_sent = 0x0300 + ((time_on & 0xFF00) >> 8)
+	await spi_write(dut, data_sent, spi_master)
+	# Write SPI cycle time
+	data_sent = 0x0400 + (time_cycle & 0x00FF)
+	await spi_write(dut, data_sent, spi_master)
+	data_sent = 0x0500 + ((time_cycle & 0xFF00) >> 8)
+	await spi_write(dut, data_sent, spi_master)
+
+
 @cocotb.test()
 async def test_pwm(dut):
-  dut._log.info("Start PWM test")
+	dut._log.info("Start PWM test")
   
-  # Initialize ports values
-  init_ports(dut)
-  # Our example module doesn't use clock and reset, but we show how to use them here anyway.
-  clock = Clock(dut.clk, 20, units="ns")
-  cocotb.start_soon(clock.start())
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
 	
-  dut.pwm_start_ext.value = 1
-  await Timer(100,units='us')
-  assert dut.pwm.value == 1
-  await Timer(700,units='us')
-  assert dut.pwm.value == 0
-  await Timer(300,units='us')
-  assert dut.pwm.value == 1
-  await Timer(700,units='us')
-  assert dut.pwm.value == 0
-  await Timer(300,units='us')
-  assert dut.pwm.value == 1
-  await Timer(700,units='us')
-  assert dut.pwm.value == 0
+	sys_freq = 50000000
+	freq_pwm = 5000
+	duty	 = 0.666
+
+	time_cycle 	= (int)(sys_freq/freq_pwm)
+	time_on 	= (int)(time_cycle*duty)
+	
+	await config_pwm(dut, time_on, time_cycle)
+
+	dut.pwm_start_ext.value = 1
+	# Delay a little bit to assert value of pwm
+	await ClockCycles(dut.clk, 5)
+	for i in range(10):
+		assert dut.pwm.value == 1
+		await ClockCycles(dut.clk, time_on+1)
+		assert dut.pwm.value == 0
+		await ClockCycles(dut.clk, time_cycle-time_on+1)
+	dut.pwm_start_ext.value = 0
+  
+@cocotb.test()
+async def test_pwm_reset(dut):
+	dut._log.info("Start PWM reset test")
+  
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
+	
+	sys_freq = 50000000
+	freq_pwm = 5000
+	duty	 = 0.666
+
+	time_cycle 	= (int)(sys_freq/freq_pwm)
+	time_on 	= (int)(time_cycle*duty)
+
+	# Configure PWM
+	await config_pwm(dut, time_on, time_cycle)
+	# Reset device
+	await reset(dut)
+	# Set back the default config
+	sys_freq = 50000000
+	freq_pwm = 1000
+	duty	 = 0.666
+
+	time_cycle 	= (int)(sys_freq/freq_pwm)
+	time_on 	= (int)(time_cycle*duty)
+
+	dut.pwm_start_ext.value = 1
+	# Delay a little bit to assert value of pwm
+	await ClockCycles(dut.clk, 5)
+	for i in range(10):
+		assert dut.pwm.value == 1
+		await ClockCycles(dut.clk, time_on+1)
+		assert dut.pwm.value == 0
+		await ClockCycles(dut.clk, time_cycle-time_on+1)
+	dut.pwm_start_ext.value = 0
+  
+@cocotb.test()
+async def test_pwm_reg(dut):
+	dut._log.info("Start PWM reg test")
+  
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
+	# Init SPI
+	spi_bus = SpiBus.from_prefix(dut,"sampled")
+	spi_master = SpiMaster(spi_bus, spi_config_16)
+	
+	sys_freq = 50000000
+	freq_pwm = 5000
+	duty	 = 0.666
+
+	time_cycle 	= (int)(sys_freq/freq_pwm)
+	time_on 	= (int)(time_cycle*duty)
+	
+	await config_pwm(dut, time_on, time_cycle)
+	# Start PWM by reg
+	await spi_write(dut, 0x0101, spi_master)
+	# Delay a little bit to assert value of pwm
+	await ClockCycles(dut.clk, 5)
+	for i in range(10):
+		assert dut.pwm.value == 1
+		await ClockCycles(dut.clk, time_on+1)
+		assert dut.pwm.value == 0
+		await ClockCycles(dut.clk, time_cycle-time_on+1)
+	# Start PWM by reg
+	await spi_write(dut, 0x0100, spi_master)
+
+@cocotb.test()
+async def test_pwm_change_on(dut):
+	dut._log.info("Start PWM change while on test")
+  
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
+	# Init SPI
+	spi_bus = SpiBus.from_prefix(dut,"sampled")
+	spi_master = SpiMaster(spi_bus, spi_config_16)
+	
+	sys_freq = 50000000
+	freq_pwm = 5000
+	duty	 = 0.666
+
+	time_cycle 	= (int)(sys_freq/freq_pwm)
+	time_on 	= (int)(time_cycle*duty)
+	
+	# Config PWM while it is on
+	dut.pwm_start_ext.value = 1
+	await ClockCycles(dut.clk, 10)
+	await config_pwm(dut, time_on, time_cycle)
+	
+	sys_freq = 50000000
+	freq_pwm = 1000
+	duty	 = 0.666
+
+	time_cycle 	= (int)(sys_freq/freq_pwm)
+	time_on 	= (int)(time_cycle*duty)
+	print(time_on)
+	print(time_cycle)
+
+	# Read SPI reg 0x00
+	read_bytes = await spi_read(dut, 0x8200, spi_master)
+	print(read_bytes)
+	assert int(''.join(str(i) for i in read_bytes)) == time_on & 0x00FF
+	read_bytes = await spi_read(dut, 0x8300, spi_master)
+	print(read_bytes)
+	assert int(''.join(str(i) for i in read_bytes)) == ((time_on & 0xFF00)>>8)
+	read_bytes = await spi_read(dut, 0x8400, spi_master)
+	print(read_bytes)
+	assert int(''.join(str(i) for i in read_bytes)) == time_cycle & 0x00FF
+	read_bytes = await spi_read(dut, 0x8500, spi_master)
+	print(read_bytes)
+	assert int(''.join(str(i) for i in read_bytes)) == ((time_cycle & 0xFF00)>>8)
