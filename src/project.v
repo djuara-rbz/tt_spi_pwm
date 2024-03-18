@@ -70,7 +70,7 @@ module tt_um_spi_pwm_djuara(
   wire 		pwm;		
 
 	// SPI driven with its own clock
-	spi_own_clock spi_own_clock_ins (
+	spi_own_clock #(ADDR_REG_LEN) spi_own_clock_ins (
 		sclk_clk,   	// SPI input clk
 		mosi_clk,   	// SPI input data mosi
 		miso_clk,   	// SPI output data miso
@@ -95,7 +95,7 @@ module tt_um_spi_pwm_djuara(
 		data_rd_sampled,	// data to read from register
 		wr_en_sampled		// write data to register
 	);
-	pwm_generator #(ADDR_REG_LEN) pwm_inst (
+	pwm_generator  pwm_inst (
 		clk,			// System CLK
 	 	rst_n,			// Reset
 	 	start_pwm,		// Start PWM generation
