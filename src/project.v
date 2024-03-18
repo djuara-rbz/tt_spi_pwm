@@ -43,12 +43,10 @@ module tt_um_spi_pwm_djuara (
   parameter int ADDR_PWM_CTRL 		= 1;
   parameter int ADDR_CYCLES_HIGH0 	= 2;
   parameter int ADDR_CYCLES_HIGH1 	= 3;
-  parameter int ADDR_CYCLES_HIGH2 	= 4;
-  parameter int ADDR_CYCLES_HIGH3 	= 5;
-  parameter int ADDR_CYCLES_FREQ0 	= 6;
-  parameter int ADDR_CYCLES_FREQ1 	= 7;
-  parameter int ADDR_CYCLES_FREQ2 	= 8;
-  parameter int ADDR_CYCLES_FREQ3 	= 9;
+  parameter int ADDR_CYCLES_FREQ0 	= 4;
+  parameter int ADDR_CYCLES_FREQ1 	= 5;
+  parameter int ADDR_DUMMY_1 		= 6;
+  parameter int ADDR_DUMMY_2 		= 7;
 
   // Address from SPI bus
   wire[3:0] addr_reg_clk;
@@ -63,10 +61,10 @@ module tt_um_spi_pwm_djuara (
   wire 		wr_en_clk;
   wire 		wr_en_sampled;
   // Device registers
-  reg [7:0] 	dev_regs [9:0];
+  reg [7:0] 	dev_regs [7:0];
   wire 			start_pwm;		
-  wire[31:0]	cycles_high; 		
-  wire[31:0]	cycles_freq;		
+  wire[15:0]	cycles_high; 		
+  wire[15:0]	cycles_freq;		
   wire 		pwm;		
 
 	// SPI driven with its own clock
@@ -108,8 +106,8 @@ module tt_um_spi_pwm_djuara (
 	assign data_rd_clk 		= dev_regs[addr_reg_clk];
 	assign data_rd_sampled  = dev_regs[addr_reg_sampled];
 	assign start_pwm		= dev_regs[ADDR_PWM_CTRL][0] || start_pwm_ext;
-	assign cycles_high 		= {dev_regs[ADDR_CYCLES_HIGH3],dev_regs[ADDR_CYCLES_HIGH2],dev_regs[ADDR_CYCLES_HIGH1],dev_regs[ADDR_CYCLES_HIGH0]};
-	assign cycles_freq 		= {dev_regs[ADDR_CYCLES_FREQ3],dev_regs[ADDR_CYCLES_FREQ2],dev_regs[ADDR_CYCLES_FREQ1],dev_regs[ADDR_CYCLES_FREQ0]};
+	assign cycles_high 		= {dev_regs[ADDR_CYCLES_HIGH1],dev_regs[ADDR_CYCLES_HIGH0]};
+	assign cycles_freq 		= {dev_regs[ADDR_CYCLES_FREQ1],dev_regs[ADDR_CYCLES_FREQ0]};
 
 	// Update the registers
 	always @(posedge clk, negedge rst_n) begin
@@ -117,14 +115,12 @@ module tt_um_spi_pwm_djuara (
 			// Dev Registers assignment
 			dev_regs[ADDR_ID] 			<= 8'h96;	// ID Register
 			dev_regs[ADDR_PWM_CTRL]		<= 8'h00;	// Ctrl Register
-			dev_regs[ADDR_CYCLES_HIGH0] <= 8'h50;	// Cycles_high LSB
-			dev_regs[ADDR_CYCLES_HIGH1] <= 8'hC3;	// Cycles_high
-			dev_regs[ADDR_CYCLES_HIGH2] <= 8'h00;	// Cycles_high	
-			dev_regs[ADDR_CYCLES_HIGH3] <= 8'h00;	// Cycles_hich MSB
-			dev_regs[ADDR_CYCLES_FREQ0] <= 8'hA0;	// Cycles_freq LSB
-			dev_regs[ADDR_CYCLES_FREQ1] <= 8'h86;	// Cycles_freq
-			dev_regs[ADDR_CYCLES_FREQ2] <= 8'h01;	// Cycles_freq
-			dev_regs[ADDR_CYCLES_FREQ3] <= 8'h00;	// Cycles_freq MSB
+			dev_regs[ADDR_CYCLES_HIGH0] <= 8'h34;	// Cycles_high LSB
+			dev_regs[ADDR_CYCLES_HIGH1] <= 8'h82;	// Cycles_high
+			dev_regs[ADDR_CYCLES_FREQ0] <= 8'h50;	// Cycles_freq LSB
+			dev_regs[ADDR_CYCLES_FREQ1] <= 8'hC3;	// Cycles_freq
+			dev_regs[ADDR_DUMMY_1] <= 8'hAA;	// Cycles_freq
+			dev_regs[ADDR_DUMMY_2] <= 8'hAA;	// Cycles_freq
 		end else begin
 			// Check if register must be update (only if reg accessed is writable)
 			if(wr_en_clk == 1 && addr_reg_clk != 0) begin

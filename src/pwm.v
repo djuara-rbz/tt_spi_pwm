@@ -4,11 +4,11 @@ module pwm_generator
 	(input 	wire clk,
 	input 	wire rst_n,
 	input 	wire start,
-	input 	wire[31:0] cycles_high,
-	input 	wire[31:0] cycles_freq,
+	input 	wire[15:0] cycles_high,
+	input 	wire[15:0] cycles_freq,
 	output 	reg pwm);
 
-	reg[31:0] counter;
+	reg[15:0] counter;
 
 	always @(posedge clk, negedge rst_n) begin
 		if(rst_n == 0) begin
