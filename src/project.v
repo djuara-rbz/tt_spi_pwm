@@ -141,14 +141,14 @@ module tt_um_spi_pwm_djuara(
 			dev_regs[ADDR_PWM_CTRL]		<= {spare_in,dev_regs[ADDR_PWM_CTRL][6:0]};	// Ctrl Register
 			if(wr_en_clk == 1 && addr_reg_clk != 0) begin
 				// If PWM is active, only allow access to ctrl reg
-				if(start_pwm == 0 || addr_reg_clk == ADDR_PWM_CTRL) begin
+				if(start_pwm == 0 || addr_reg_clk == ADDR_PWM_CTRL || addr_reg_clk > ADDR_CYCLES_FREQ1) begin
 					data_wr_z1 			<= data_wr_clk;
 					dev_regs[addr_reg_clk] 	<= data_wr_z1;
 				end
 			// Check if register must be update (only if reg accessed is writable)
 			end else if(wr_en_sampled == 1 && addr_reg_sampled != 0) begin
 				// If PWM is active, only allow access to ctrl reg
-				if(start_pwm == 0 || addr_reg_sampled == ADDR_PWM_CTRL) begin
+				if(start_pwm == 0 || addr_reg_sampled == ADDR_PWM_CTRL || addr_reg_sampled > ADDR_CYCLES_FREQ1) begin
 					dev_regs[addr_reg_sampled] 	<= data_wr_sampled;
 				end
 			end
