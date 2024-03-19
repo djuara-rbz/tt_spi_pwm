@@ -5,7 +5,7 @@ module edge_detector
 	(input wire clk,
 	input wire rst_n,
 	input wire signal,
-	output wire edge_detected);
+	output reg edge_detected);
 
 	reg signal_z1;
 
@@ -18,10 +18,12 @@ module edge_detector
 	end 
 
 	// Detects risign edge
-	if(edge_type == 0) begin 
-		assign edge_detected = signal & ~signal_z1;
-	// Detects falling edge
-	end else begin
-		assign edge_detected = ~signal & signal_z1;
-	end 
+	always @* begin
+		if(edge_type == 0) begin 
+			edge_detected = signal & ~signal_z1;
+		// Detects falling edge
+		end else begin
+			edge_detected = ~signal & signal_z1;
+		end 
+	end
 endmodule

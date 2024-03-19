@@ -5,7 +5,6 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge, Timer
 from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
-import timeit
 
 freq = 10e6
 
@@ -159,9 +158,9 @@ async def test_spi_read_out_clk(dut):
 	# Reset device
 	await reset(dut)
 	# Read SPI reg 0x00
-	read_bytes = await spi_read(dut, 0x860000, spi_master)
+	read_bytes = await spi_read(dut, 0xA00000, spi_master)
 	# Set the input values, wait one clock cycle, and check the output
-	assert int(''.join(str(i) for i in read_bytes)) == 170
+	assert int(''.join(str(i) for i in read_bytes)) == 150
 
 @cocotb.test()
 async def test_spi_read_sampled(dut):
@@ -256,8 +255,8 @@ async def test_spi_read_out_sampled(dut):
 	# Reset device
 	await reset(dut)
 	# Read SPI reg 0x00
-	read_bytes = await spi_read(dut, 0x8700, spi_master)
-	assert int(''.join(str(i) for i in read_bytes)) == 170
+	read_bytes = await spi_read(dut, 0xC000, spi_master)
+	assert int(''.join(str(i) for i in read_bytes)) == 150
 
 
 async def config_pwm(dut, time_on, time_cycle):
@@ -413,3 +412,51 @@ async def test_pwm_change_on(dut):
 	assert int(''.join(str(i) for i in read_bytes)) == time_cycle & 0x00FF
 	read_bytes = await spi_read(dut, 0x8500, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == ((time_cycle & 0xFF00)>>8)
+
+@cocotb.test()
+async def test_io_read(dut):
+	dut._log.info("Test IO inputs")
+  
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
+	# Init SPI
+	spi_bus = SpiBus.from_prefix(dut,"sampled")
+	spi_master = SpiMaster(spi_bus, spi_config_16)
+	# Set inputs
+	dut.uio_in.value = 0xAA
+	await ClockCycles(dut.clk, 10)
+	# Check outputs are 0 and all io are inputs
+	assert dut.uio_out.value 	== 0x00
+	assert dut.uio_oe.value 	== 0x00
+	# Read SPI io in reg
+	read_bytes = await spi_read(dut, 0x8700, spi_master)
+	assert int(''.join(str(i) for i in read_bytes)) == 170
+	# Set inputs
+	dut.uio_in.value = 0x55
+	await ClockCycles(dut.clk, 10)
+	# Read SPI io in reg
+	read_bytes = await spi_read(dut, 0x8700, spi_master)
+	assert int(''.join(str(i) for i in read_bytes)) == 85
+
+@cocotb.test()
+async def test_io_write(dut):
+	dut._log.info("Test IO outputs and IO output enable")
+  
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
+	# Init SPI
+	spi_bus = SpiBus.from_prefix(dut,"sampled")
+	spi_master = SpiMaster(spi_bus, spi_config_16)
+	# Set outputs
+	await spi_write(dut, 0x07AA, spi_master)
+	await spi_write(dut, 0x06AA, spi_master)
+	await ClockCycles(dut.clk, 10)
+	# Check output values controlled by registers
+	print(dut.uio_out.value)
+	print(dut.uio_oe.value)
+	assert dut.uio_out.value 	== 0xAA
+	assert dut.uio_oe.value 	== 0xAA

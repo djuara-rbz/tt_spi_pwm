@@ -28,8 +28,6 @@ module tt_um_spi_pwm_djuara(
 
   // All output pins must be assigned. If not used, assign to 0.
   assign uo_out  		= {5'b0, pwm, miso_sampled, miso_clk};  // uo_out[0] is the miso_reg line
-  assign uio_out 		= 0;
-  assign uio_oe  		= 0;
 
   assign sclk_clk 			= ui_in[0];  // uo_in[0] is the spi clk
   assign mosi_clk 			= ui_in[1];  // uo_in[1] is the spi mosi
@@ -45,8 +43,8 @@ module tt_um_spi_pwm_djuara(
   parameter int ADDR_CYCLES_HIGH1 	= 3;
   parameter int ADDR_CYCLES_FREQ0 	= 4;
   parameter int ADDR_CYCLES_FREQ1 	= 5;
-  parameter int ADDR_DUMMY_1 		= 6;
-  parameter int ADDR_DUMMY_2 		= 7;
+  parameter int ADDR_IODIR 			= 6;
+  parameter int ADDR_IOVALUE 		= 7;
 
   localparam ADDR_REG_LEN = 3;
 
@@ -54,8 +52,8 @@ module tt_um_spi_pwm_djuara(
   wire[2:0] addr_reg_clk;
   wire[2:0] addr_reg_sampled;
   // CDC registers
-  wire[7:0] data_rd_clk;
-  wire[7:0] data_rd_sampled;
+  reg[7:0] data_rd_clk;
+  reg[7:0] data_rd_sampled;
   wire[7:0] data_wr_clk;
   wire[7:0] data_wr_sampled;
   reg[7:0] data_wr_z1;
@@ -105,8 +103,22 @@ module tt_um_spi_pwm_djuara(
 	);
 
 	// Assign value of the register accessed
-	assign data_rd_clk 		= dev_regs[addr_reg_clk];
-	assign data_rd_sampled  = dev_regs[addr_reg_sampled];
+	always @* begin
+		if(addr_reg_clk == ADDR_IOVALUE) begin
+			data_rd_clk 		= uio_in;
+		end else begin
+			data_rd_clk 		= dev_regs[addr_reg_clk];
+		end 
+		if(addr_reg_sampled == ADDR_IOVALUE) begin
+			data_rd_sampled 		= uio_in;
+		end else begin
+			data_rd_sampled 		= dev_regs[addr_reg_sampled];
+		end 
+	end
+	// Assign io signals from registers
+	assign uio_out 			= dev_regs[ADDR_IOVALUE];
+	assign uio_oe 			= dev_regs[ADDR_IODIR];
+	// Assign parameters for PWM from registers
 	assign start_pwm		= dev_regs[ADDR_PWM_CTRL][0] || start_pwm_ext;
 	assign cycles_high 		= {dev_regs[ADDR_CYCLES_HIGH1],dev_regs[ADDR_CYCLES_HIGH0]};
 	assign cycles_freq 		= {dev_regs[ADDR_CYCLES_FREQ1],dev_regs[ADDR_CYCLES_FREQ0]};
@@ -121,8 +133,8 @@ module tt_um_spi_pwm_djuara(
 			dev_regs[ADDR_CYCLES_HIGH1] <= 8'h82;	// Cycles_high
 			dev_regs[ADDR_CYCLES_FREQ0] <= 8'h50;	// Cycles_freq LSB
 			dev_regs[ADDR_CYCLES_FREQ1] <= 8'hC3;	// Cycles_freq
-			dev_regs[ADDR_DUMMY_1] <= 8'hAA;	// Cycles_freq
-			dev_regs[ADDR_DUMMY_2] <= 8'hAA;	// Cycles_freq
+			dev_regs[ADDR_IODIR] 		<= 8'h00;	// IO Output Enable (0-input)
+			dev_regs[ADDR_IOVALUE] 		<= 8'h00;	// IO Output Value
 		end else begin
 			// Check if register must be update (only if reg accessed is writable)
 			if(wr_en_clk == 1 && addr_reg_clk != 0) begin
