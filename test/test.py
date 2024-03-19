@@ -469,3 +469,27 @@ async def test_io_write(dut):
 	# Check output values controlled by registers
 	assert dut.uio_out.value 	== 0xAA
 	assert dut.uio_oe.value 	== 0xAA
+
+@cocotb.test()
+async def test_io_write_pwm_on(dut):
+	dut._log.info("Test IO outputs and IO output enable when PWM is on")
+  
+	# Initialize ports values
+	init_ports(dut)
+	# Reset device
+	await reset(dut)
+	# Init PWM
+	dut.pwm_start_ext.value = 1
+	await ClockCycles(dut.clk, 10)
+	assert dut.uio_out.value 	== 0x00
+	assert dut.uio_oe.value 	== 0x00
+	# Init SPI
+	spi_bus = SpiBus.from_prefix(dut,"sampled")
+	spi_master = SpiMaster(spi_bus, spi_config_16)
+	# Set outputs
+	await spi_write(dut, 0x07AA, spi_master)
+	await spi_write(dut, 0x06AA, spi_master)
+	await ClockCycles(dut.clk, 10)
+	# Check output values controlled by registers
+	assert dut.uio_out.value 	== 0xAA
+	assert dut.uio_oe.value 	== 0xAA
