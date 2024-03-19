@@ -25,6 +25,7 @@ module tt_um_spi_pwm_djuara(
   wire	mosi_sampled;
   wire	cs_sampled;
   wire 	start_pwm_ext;		
+  wire 	spare_in;		
 
   // All output pins must be assigned. If not used, assign to 0.
   assign uo_out  		= {5'b0, pwm, miso_sampled, miso_clk};  // uo_out[0] is the miso_reg line
@@ -36,17 +37,17 @@ module tt_um_spi_pwm_djuara(
   assign mosi_sampled		= ui_in[4];  // uo_in[1] is the spi mosi
   assign cs_sampled			= ui_in[5];  // uo_in[2] is the spi cs
   assign start_pwm_ext		= ui_in[6];	 // uo_in[6] is the external start of pwm
+  assign spare_in			= ui_in[7];	 // ui_in[7] is a spare input bit
 	
-  parameter int ADDR_ID 			= 0;
-  parameter int ADDR_PWM_CTRL 		= 1;
-  parameter int ADDR_CYCLES_HIGH0 	= 2;
-  parameter int ADDR_CYCLES_HIGH1 	= 3;
-  parameter int ADDR_CYCLES_FREQ0 	= 4;
-  parameter int ADDR_CYCLES_FREQ1 	= 5;
-  parameter int ADDR_IODIR 			= 6;
-  parameter int ADDR_IOVALUE 		= 7;
-
   localparam ADDR_REG_LEN = 3;
+  localparam ADDR_ID 			= 0;
+  localparam ADDR_PWM_CTRL 		= 1;
+  localparam ADDR_CYCLES_HIGH0 	= 2;
+  localparam ADDR_CYCLES_HIGH1 	= 3;
+  localparam ADDR_CYCLES_FREQ0 	= 4;
+  localparam ADDR_CYCLES_FREQ1 	= 5;
+  localparam ADDR_IODIR 		= 6;
+  localparam ADDR_IOVALUE 		= 7;
 
   // Address from SPI bus
   wire[2:0] addr_reg_clk;
@@ -137,6 +138,7 @@ module tt_um_spi_pwm_djuara(
 			dev_regs[ADDR_IOVALUE] 		<= 8'h00;	// IO Output Value
 		end else begin
 			// Check if register must be update (only if reg accessed is writable)
+			dev_regs[ADDR_PWM_CTRL]		<= {spare_in,dev_regs[ADDR_PWM_CTRL][6:0]};	// Ctrl Register
 			if(wr_en_clk == 1 && addr_reg_clk != 0) begin
 				// If PWM is active, only allow access to ctrl reg
 				if(start_pwm == 0 || addr_reg_clk == ADDR_PWM_CTRL) begin

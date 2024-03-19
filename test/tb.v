@@ -33,6 +33,7 @@ module tb ();
   wire sampled_cs;
   wire pwm;
   wire pwm_start_ext;
+  wire spare_in;
 
   assign clk_miso 		= uo_out[0];
   assign sampled_miso 	= uo_out[1];
@@ -44,7 +45,7 @@ module tb ();
   assign ui_in[4] 		= sampled_mosi;
   assign ui_in[5] 		= sampled_cs;
   assign ui_in[6] 		= pwm_start_ext;
-  assign ui_in[7] 	= 2'b0;
+  assign ui_in[7] 		= spare_in;
 
   // Replace tt_um_example with your module name:
   tt_um_spi_pwm_djuara user_project (

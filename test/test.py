@@ -31,6 +31,7 @@ def init_ports(dut):
 	dut.clk_cs.value = 1
 	dut.clk_sclk.value = 0
 	dut.clk_mosi.value = 0
+	dut.spare_in.value = 0
 	dut.ena.value = 1
 	dut.uio_in.value = 0
 	dut.pwm_start_ext.value = 0
@@ -86,8 +87,9 @@ async def test_spi_write_clk(dut):
 	spi_master_wr = SpiMaster(spi_bus, spi_config_16)
 	# Reset device
 	await reset(dut)
+	dut.spare_in.value = 1
 	# Write SPI reg 0x01 data 0xAA
-	await spi_write(dut, 0x01AA, spi_master_wr)
+	await spi_write(dut, 0x012A, spi_master_wr)
 	# Read SPI reg 0x00
 	read_bytes = await spi_read(dut, 0x810000, spi_master_rd)
 	assert int(''.join(str(i) for i in read_bytes)) == 170
@@ -120,6 +122,8 @@ async def test_spi_reset_clk(dut):
 	spi_master_wr = SpiMaster(spi_bus, spi_config_16)
 	# Reset device
 	await reset(dut)
+	# Set bit of register 0x01
+	dut.spare_in.value = 0
 	# Write SPI reg 0x01 data 0xAA
 	await spi_write(dut, 0x01AA, spi_master_wr)
 	# Reset device
@@ -139,6 +143,8 @@ async def test_spi_reset_in_clk(dut):
 	spi_master_wr = SpiMaster(spi_bus, spi_config_16)
 	# Reset device
 	dut.rst_n.value = 0
+	# Set bit of register 0x01
+	dut.spare_in.value = 0
 	# Write SPI reg 0x01 data 0xAA
 	await spi_write(dut, 0x01AA, spi_master_wr)
 	# Get back from reset
@@ -186,8 +192,9 @@ async def test_spi_write_sampled(dut):
 	spi_master = SpiMaster(spi_bus, spi_config_16)
 	# Reset device
 	await reset(dut)
+	dut.spare_in.value = 1
 	# Write SPI reg 0x01 data 0xAA
-	await spi_write(dut, 0x01AA, spi_master)
+	await spi_write(dut, 0x012A, spi_master)
 	# Read SPI reg 0x00
 	read_bytes = await spi_read(dut, 0x8100, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 170
@@ -218,6 +225,8 @@ async def test_spi_reset_sampled(dut):
 	spi_master = SpiMaster(spi_bus, spi_config_16)
 	# Reset device
 	await reset(dut)
+	# Set bit of register 0x01
+	dut.spare_in.value = 0
 	# Write SPI reg 0x01 data 0xAA
 	await spi_write(dut, 0x01AA, spi_master)
 	# Reset device
@@ -236,6 +245,8 @@ async def test_spi_reset_in_sampled(dut):
 	spi_master = SpiMaster(spi_bus, spi_config_16)
 	# Reset device
 	dut.rst_n.value = 0
+	# Set bit of register 0x01
+	dut.spare_in.value = 0
 	# Write SPI reg 0x01 data 0xAA
 	await spi_write(dut, 0x01AA, spi_master)
 	# Get back from reset
@@ -456,7 +467,5 @@ async def test_io_write(dut):
 	await spi_write(dut, 0x06AA, spi_master)
 	await ClockCycles(dut.clk, 10)
 	# Check output values controlled by registers
-	print(dut.uio_out.value)
-	print(dut.uio_oe.value)
 	assert dut.uio_out.value 	== 0xAA
 	assert dut.uio_oe.value 	== 0xAA
