@@ -37,7 +37,7 @@ module tt_um_spi_pwm_djuara(
   assign mosi_sampled		= ui_in[4];  // uo_in[1] is the spi mosi
   assign cs_sampled			= ui_in[5];  // uo_in[2] is the spi cs
   assign start_pwm_ext		= ui_in[6];	 // uo_in[6] is the external start of pwm
-  assign spare_in			= ui_in[7];	 // ui_in[7] is a spare input bit
+  assign spare_in			= ui_in[7] & ena;	 // ui_in[7] & ena is a spare input bit
 	
   localparam ADDR_REG_LEN = 3;
   localparam ADDR_ID 			= 0;
