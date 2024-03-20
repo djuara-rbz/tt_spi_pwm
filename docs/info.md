@@ -13,9 +13,33 @@ This design is an SPI controlled PWM generator and 8-pin IO controller. IOs can 
 
 ![alt text](https://github.com/djuara-rbz/tt_spi_pwm/blob/main/docs/block_diagram.JPG?raw=true)
 
-The design contain 8 registers that can be accessed by the two SPI interfaces. With these registers user can control PWM generator, allowing control of time on and cyle time. Also there are 8 IOs that can be set as inputs or outputs.
+The design contain 8 registers that can be accessed by the two SPI interfaces. With these registers user can control PWM generator, allowing control of time on and cycle time. Also there are 8 IOs that can be set as inputs or outputs.
 
 If two SPI writes occurs at the same time, SPI_CLK prevails over SPI_SAMPLED. 
+
+### Configuration example
+
+#### PWM
+
+Configuration of PWM is based on system clk. Registers to be configured are TICKS_ON and TICKS_CYCLE, which is basically the number of ticks of system clk the pwm signal is on and the period.
+
+So assuming a system clk of 50 MHz, if we want to obtain a PWM signal with period 1 ms and duty cycle of 33%:
+
+We need to calculate the number of clk ticks that are in 1 ms:
+
+cycle_ticks = T / T_clk = 1 ms / (1 / 50 MHz) = 50 MHz * 1 ms = 50000 ticks
+
+And now calculate the number of clk ticks the signal is on:
+
+on_ticks = cycle_ticks * duty_cycle = 50000 * 0.33 = 16500 ticks
+
+So configuring the registers with these values, and activating PWM (through external signal or register)
+
+#### IOs
+
+In order to use the IOs, we just need to configure the IO_DIR register in order to set the pin as input or output.
+
+Then, if it is an input, just read the IO_VALUE register, and if it is an output, just write the desired value to the IO_VALUE register.
 
 ### Ports
 
