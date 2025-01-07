@@ -30,8 +30,8 @@ pinout:
   ui[3]: "sampled_sclk"
   ui[4]: "sampled_mosi"
   ui[5]: "sampled_cs"
-  ui[6]: ""
-  ui[7]: ""
+  ui[6]: "start pwm ext"
+  ui[7]: "input and'ed with ena"
 
   # Outputs
   uo[0]: "clk_miso"

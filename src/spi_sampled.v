@@ -9,10 +9,10 @@ module spi_sampled
 	#(parameter ADDR_REG_LEN=3)
 	(
 	input 	wire 	clk,	// System clk
-    input  	wire 	sclk,   // SPI input clk
-    input  	wire 	mosi,   // SPI input data mosi
-    output 	reg 	miso,   // SPI output data miso
-    input  	wire 	cs,  	// SPI input cs
+    input  	wire 	spi_sclk,   // SPI input clk
+    input  	wire 	spi_mosi,   // SPI input data mosi
+    output 	reg 	spi_miso,   // SPI output data miso
+    input  	wire 	spi_cs,  	// SPI input cs
     input  	wire     rst_n,  // reset_n - low to reset
 	output 	reg[ADDR_REG_LEN-1:0] addr_reg,	// reg address to be accessed
 	output 	reg[7:0] data_wr,	// data to be written to register
@@ -27,6 +27,11 @@ module spi_sampled
   reg[7:0] spi_data_reg;
   reg[3:0] index;
 
+  reg  			sclk_z1, sclk;
+  reg   		mosi_z1, mosi;
+  reg   		cs_z1, cs;
+  reg   		miso;
+
   wire pos_edge;
   wire neg_edge;
 
@@ -35,6 +40,17 @@ module spi_sampled
 	index 		= 0;
 	miso 		= 0;
   end
+
+  	assign spi_miso = miso;
+  	// CDC to avoid errors when sampling the input signals
+	always @(posedge clk) begin
+		sclk_z1 	<= spi_sclk;
+		sclk 		<= sclk_z1;
+		mosi_z1 	<= spi_mosi;
+		mosi 		<= mosi_z1;
+		cs_z1 		<= spi_cs;
+		cs 			<= cs_z1;
+	end
 
  	// Register MOSI with falling edge CPOL=0 CPHA1
 	always @(posedge clk or posedge cs) begin

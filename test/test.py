@@ -6,7 +6,7 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge, Timer
 from cocotbext.spi import SpiBus, SpiConfig, SpiMaster
 
-freq = 10e6
+freq = 8e6
 
 # Init SPIs
 spi_config_24 = SpiConfig(

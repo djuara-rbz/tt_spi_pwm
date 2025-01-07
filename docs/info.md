@@ -56,6 +56,7 @@ Then, if it is an input, just read the IO_VALUE register, and if it is an output
 |   uo_out[7:3]        |  out   | Always 0 |
 |   uo_out[2]          |  out   | PWM output |
 |   uo_out[1]          |  out   | MISO signal of SPI_SAMPLED |
+|   uo_out[0]          |  out   | MISO signal of SPI_CLK |
 |   uio_in[7:0]        |  in    | Input signals of IOs |
 |   uio_out[7:0]       |  out   | Output signals of IOs |
 |   uio_oe[7:0]        |  out   | OE signals of IOs |
@@ -108,6 +109,8 @@ This register contain the value of the io pin. When read it reports the values o
 ### SPI Interfaces
 
 Registers are accesed through one of the two SPI interfaces. Both interfaces share the access to the registers, so just one interface can be accessed at the same time.
+
+SPI mode is CPOL = 0 and CPHA = 1. Signal changes on rising edges and is capture on falling edges.
 
 #### SPI CLK
 
