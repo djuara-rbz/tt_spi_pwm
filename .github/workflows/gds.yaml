@@ -33,7 +33,7 @@ jobs:
           submodules: recursive
 
       - name: GL test
-        uses: djuara-rbz/tt-gds-action/gl_test@0abc61a4321029b85e9ca96ee8c7a82e7852cca1
+        uses: djuara-rbz/tt-gds-action/gl_test@06d9f49caab7a1c2ec9f2c4f690874b6e7dac3d46
   viewer:
     needs: gds
     runs-on: ubuntu-latest
