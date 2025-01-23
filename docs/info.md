@@ -161,12 +161,19 @@ To read a register, 16 bits must be sent
 
 Different tests to check all functionalities:
 
-	- SPI Reads: Read the ID register (0x00) and the byte received should be 0x96. Use both SPI_CLK and SPI_SAMPLED interface.
-	- SPI Writes: you can write a register different than ID register, and then read it back an check you read the value previously written. Use both SPI_CLK and SPI_SAMPLED interface.
-	- PWM output: Configure a desired pwm cycle in the corresponding registers TICKS_ON_LSB/MSB and TICKS_CYCLES_LSB/MSB, and activate the PWM output in PWM_CONTROL register. Check PWM output.
-	- External PWM on/off: Set high value on ui_in[6] and check PWM output.
-	- Bidir ios: Configure direction of ios with IO_DIR, and set values for the outputs in IO_VALUE, then read IO_VALUE and check correctness.
-	- Spare in/out: Set ui_io[7] to high and check bit 7 of PWM_CTRL is high when this design is selected.
+ - SPI Reads: Read the ID register (0x00) and the byte received should be 0x96. Use both SPI_CLK and SPI_SAMPLED interface.
+ ![image](https://github.com/user-attachments/assets/22dd8d6c-ab73-48e3-ae4c-e7aed64d28ef)
+ ![image](https://github.com/user-attachments/assets/91bb5470-b383-4b79-b441-10ae46feb6eb)
+ - SPI Writes: you can write a register different than ID register, and then read it back an check you read the value previously written. Use both SPI_CLK and SPI_SAMPLED interface.
+ ![image](https://github.com/user-attachments/assets/a47ad79a-81f1-4993-a045-dc2b55749dca)
+ ![image](https://github.com/user-attachments/assets/039ceb1c-2ef3-4874-a4d6-e4e1ff1b8052)
+ - PWM output: Configure a desired pwm cycle in the corresponding registers TICKS_ON_LSB/MSB and TICKS_CYCLES_LSB/MSB, and activate the PWM output in PWM_CONTROL register. Check PWM output.
+
+ - External PWM on/off: Set high value on ui_in[6] and check PWM output.
+ 
+ - Bidir ios: Configure direction of ios with IO_DIR, and set values for the outputs in IO_VALUE, then read IO_VALUE and check correctness.
+ 
+ - Spare in/out: Set ui_io[7] to high and check bit 7 of PWM_CTRL is high when this design is selected.
 
 ## External hardware
 
