@@ -61,9 +61,10 @@ async def spi_write(dut, reg, spi_master):
 	await cocotb.triggers.Timer(1,'ps')
 	await spi_master.write([reg])
 
+# Read the ID register with spi_clk
 @cocotb.test()
 async def test_spi_read_clk(dut):
-	dut._log.info("Start SPI clk read test")
+	dut._log.info("SPI clk read ID")
 	# Initialize ports values
 	init_ports(dut)
 	#Init SPI
@@ -76,9 +77,10 @@ async def test_spi_read_clk(dut):
 	# Set the input values, wait one clock cycle, and check the output
 	assert int(''.join(str(i) for i in read_bytes)) == 150
 
+# Write and read a register (taking into account spare value)
 @cocotb.test()
 async def test_spi_write_clk(dut):
-	dut._log.info("Start SPI clk write test")
+	dut._log.info("SPI clk write and read")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -94,9 +96,10 @@ async def test_spi_write_clk(dut):
 	read_bytes = await spi_read(dut, 0x810000, spi_master_rd)
 	assert int(''.join(str(i) for i in read_bytes)) == 170
 
+# Write to register 0x00 and check it has no effect
 @cocotb.test()
 async def test_spi_write_read_only_clk(dut):
-	dut._log.info("Start SPI clk write read only test")
+	dut._log.info("SPI clk write 0x00 reg with no effect")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -111,9 +114,10 @@ async def test_spi_write_read_only_clk(dut):
 	read_bytes = await spi_read(dut, 0x800000, spi_master_rd)
 	assert int(''.join(str(i) for i in read_bytes)) == 150
 
+# Check reset restore value of registers
 @cocotb.test()
 async def test_spi_reset_clk(dut):
-	dut._log.info("Start SPI clk reset test")
+	dut._log.info("SPI clk check reset restore registers")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -132,9 +136,10 @@ async def test_spi_reset_clk(dut):
 	read_bytes = await spi_read(dut, 0x810000, spi_master_rd)
 	assert int(''.join(str(i) for i in read_bytes)) == 0
 
+# Check device ignore transactions while in reset
 @cocotb.test()
 async def test_spi_reset_in_clk(dut):
-	dut._log.info("Start SPI clk write while reset test")
+	dut._log.info("SPI clk write while reset")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -153,9 +158,10 @@ async def test_spi_reset_in_clk(dut):
 	read_bytes = await spi_read(dut, 0x810000, spi_master_rd)
 	assert int(''.join(str(i) for i in read_bytes)) == 0
 
+# Check if we write out of the registers it returns ID
 @cocotb.test()
 async def test_spi_read_out_clk(dut):
-	dut._log.info("Start SPI clk read out of registers test")
+	dut._log.info("SPI clk read out of bounds")
 	# Initialize ports values
 	init_ports(dut)
 	#Init SPI
@@ -168,9 +174,10 @@ async def test_spi_read_out_clk(dut):
 	# Set the input values, wait one clock cycle, and check the output
 	assert int(''.join(str(i) for i in read_bytes)) == 150
 
+# Read the ID register with spi_clk
 @cocotb.test()
 async def test_spi_read_sampled(dut):
-	dut._log.info("Start SPI Sampled read test")
+	dut._log.info("SPI sampled read ID")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -182,9 +189,10 @@ async def test_spi_read_sampled(dut):
 	read_bytes = await spi_read(dut, 0x8000, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 150
 
+# Write and read a register (taking into account spare value)
 @cocotb.test()
 async def test_spi_write_sampled(dut):
-	dut._log.info("Start SPI Sampled write test")
+	dut._log.info("SPI Sampled write and read")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -199,9 +207,10 @@ async def test_spi_write_sampled(dut):
 	read_bytes = await spi_read(dut, 0x8100, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 170
 
+# Write to register 0x00 and check it has no effect
 @cocotb.test()
 async def test_spi_write_read_only_sampled(dut):
-	dut._log.info("Start SPI Sampled write read only test")
+	dut._log.info("SPI Sampled write 0x00 reg with no effect")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -215,9 +224,10 @@ async def test_spi_write_read_only_sampled(dut):
 	read_bytes = await spi_read(dut, 0x8000, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 150
 
+# Check reset restore value of registers
 @cocotb.test()
 async def test_spi_reset_sampled(dut):
-	dut._log.info("Start SPI Sampled reset test")
+	dut._log.info("SPI Sampled check reset restore registers")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -235,9 +245,10 @@ async def test_spi_reset_sampled(dut):
 	read_bytes = await spi_read(dut, 0x8100, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 0
 
+# Check device ignore transactions while in reset
 @cocotb.test()
 async def test_spi_reset_in_sampled(dut):
-	dut._log.info("Start SPI sampled write while reset test")
+	dut._log.info("SPI sampled write while reset")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -255,9 +266,10 @@ async def test_spi_reset_in_sampled(dut):
 	read_bytes = await spi_read(dut, 0x8100, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 0
 
+# Check if we write out of the registers it returns ID
 @cocotb.test()
 async def test_spi_read_out_sampled(dut):
-	dut._log.info("Start SPI sampled read out of registers test")
+	dut._log.info("SPI sampled read out of bounds")
 	# Initialize ports values
 	init_ports(dut)
 	# Get spi port
@@ -284,10 +296,10 @@ async def config_pwm(dut, time_on, time_cycle):
 	data_sent = 0x0500 + ((time_cycle & 0xFF00) >> 8)
 	await spi_write(dut, data_sent, spi_master)
 
-
+# Test PWM signal
 @cocotb.test()
 async def test_pwm(dut):
-	dut._log.info("Start PWM test")
+	dut._log.info("PWM test")
   
 	# Initialize ports values
 	init_ports(dut)
@@ -313,9 +325,10 @@ async def test_pwm(dut):
 		await ClockCycles(dut.clk, time_cycle-time_on+1)
 	dut.pwm_start_ext.value = 0
   
+# Check values are restores if reset 
 @cocotb.test()
 async def test_pwm_reset(dut):
-	dut._log.info("Start PWM reset test")
+	dut._log.info("PWM reset test")
   
 	# Initialize ports values
 	init_ports(dut)
@@ -351,9 +364,10 @@ async def test_pwm_reset(dut):
 		await ClockCycles(dut.clk, time_cycle-time_on+1)
 	dut.pwm_start_ext.value = 0
   
+# Test spi pwm config is set
 @cocotb.test()
 async def test_pwm_reg(dut):
-	dut._log.info("Start PWM reg test")
+	dut._log.info("PWM config using SPI")
   
 	# Initialize ports values
 	init_ports(dut)
@@ -383,9 +397,10 @@ async def test_pwm_reg(dut):
 	# Start PWM by reg
 	await spi_write(dut, 0x0100, spi_master)
 
+# Check that new config is not accepted if pwm is ON
 @cocotb.test()
 async def test_pwm_change_on(dut):
-	dut._log.info("Start PWM change while on test")
+	dut._log.info("PWM change while on test")
   
 	# Initialize ports values
 	init_ports(dut)
@@ -407,6 +422,7 @@ async def test_pwm_change_on(dut):
 	await ClockCycles(dut.clk, 10)
 	await config_pwm(dut, time_on, time_cycle)
 	
+	# Default configuration
 	sys_freq = 50000000
 	freq_pwm = 1000
 	duty	 = 0.666
@@ -415,6 +431,7 @@ async def test_pwm_change_on(dut):
 	time_on 	= (int)(time_cycle*duty)
 
 	# Read SPI reg 0x00
+	# Check new config has not been taken into account
 	read_bytes = await spi_read(dut, 0x8200, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == time_on & 0x00FF
 	read_bytes = await spi_read(dut, 0x8300, spi_master)
@@ -424,6 +441,7 @@ async def test_pwm_change_on(dut):
 	read_bytes = await spi_read(dut, 0x8500, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == ((time_cycle & 0xFF00)>>8)
 
+# Test IO inputs
 @cocotb.test()
 async def test_io_read(dut):
 	dut._log.info("Test IO inputs")
@@ -451,6 +469,7 @@ async def test_io_read(dut):
 	read_bytes = await spi_read(dut, 0x8700, spi_master)
 	assert int(''.join(str(i) for i in read_bytes)) == 85
 
+# Test ios as outputs
 @cocotb.test()
 async def test_io_write(dut):
 	dut._log.info("Test IO outputs and IO output enable")
@@ -470,6 +489,7 @@ async def test_io_write(dut):
 	assert dut.uio_out.value 	== 0xAA
 	assert dut.uio_oe.value 	== 0xAA
 
+# Test IOs are still working if PWM is on
 @cocotb.test()
 async def test_io_write_pwm_on(dut):
 	dut._log.info("Test IO outputs and IO output enable when PWM is on")
