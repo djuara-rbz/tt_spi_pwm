@@ -162,18 +162,32 @@ To read a register, 16 bits must be sent
 Different tests to check all functionalities:
 
  - SPI Reads: Read the ID register (0x00) and the byte received should be 0x96. Use both SPI_CLK and SPI_SAMPLED interface.
+
  ![image](https://github.com/user-attachments/assets/22dd8d6c-ab73-48e3-ae4c-e7aed64d28ef)
+
  ![image](https://github.com/user-attachments/assets/91bb5470-b383-4b79-b441-10ae46feb6eb)
+ 
  - SPI Writes: you can write a register different than ID register, and then read it back an check you read the value previously written. Use both SPI_CLK and SPI_SAMPLED interface.
+
  ![image](https://github.com/user-attachments/assets/a47ad79a-81f1-4993-a045-dc2b55749dca)
+
  ![image](https://github.com/user-attachments/assets/039ceb1c-2ef3-4874-a4d6-e4e1ff1b8052)
+
  - PWM output: Configure a desired pwm cycle in the corresponding registers TICKS_ON_LSB/MSB and TICKS_CYCLES_LSB/MSB, and activate the PWM output in PWM_CONTROL register. Check PWM output.
+   
+ ![image](https://github.com/user-attachments/assets/6f016e02-9f37-4ddb-8e8d-80168f636272)
 
  - External PWM on/off: Set high value on ui_in[6] and check PWM output.
- 
+   
+ ![image](https://github.com/user-attachments/assets/88b62916-ee5d-446c-a7c0-b02b6e5ee924)
+
  - Bidir ios: Configure direction of ios with IO_DIR, and set values for the outputs in IO_VALUE, then read IO_VALUE and check correctness.
- 
+   
+ ![image](https://github.com/user-attachments/assets/af90bb44-8402-4e6f-b013-b7888e6a1725)
+
  - Spare in/out: Set ui_io[7] to high and check bit 7 of PWM_CTRL is high when this design is selected.
+   
+ ![image](https://github.com/user-attachments/assets/f82c24db-5ec3-4ab0-b203-dc32119c9b6c)
 
 ## External hardware
 
